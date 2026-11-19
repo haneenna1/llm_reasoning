@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Large / regenerable outputs (raw generations live on /home only; back up separately)
+results/raw/
+*.parquet
+
+# Logs: keep the env freeze, ignore job/run logs
+logs/*
+!logs/pip_freeze.txt
+
+# Editor / local
+.vscode/
+.claude/settings.local.json
+.env

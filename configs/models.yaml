@@ -1,0 +1,49 @@
+# Model registry. Revisions pinned to the HF commit SHA verified on 2026-11-18
+# (step 1). Full SHAs are resolved and logged at download time; the short
+# prefixes here are checked against them.
+#
+# role: base | sft | rl_zero | sft_rl | sft_dpo
+family_a:
+  mimo_base:
+    hf_id: XiaomiMiMo/MiMo-7B-Base
+    revision_prefix: d892dcc601
+    role: base
+    trust_remote_code: true
+  mimo_sft:
+    hf_id: XiaomiMiMo/MiMo-7B-SFT
+    revision_prefix: 0a9f1180d9
+    role: sft
+    trust_remote_code: true
+  mimo_rl_zero:
+    hf_id: XiaomiMiMo/MiMo-7B-RL-Zero
+    revision_prefix: da0bde6fbb
+    role: rl_zero
+    trust_remote_code: true
+  mimo_rl:
+    hf_id: XiaomiMiMo/MiMo-7B-RL
+    revision_prefix: 7c7707596b
+    role: sft_rl
+    trust_remote_code: true
+
+family_b:
+  olmo_base:
+    hf_id: allenai/Olmo-3-1025-7B
+    revision_prefix: a81bae42db
+    role: base
+  olmo_think_sft:
+    hf_id: allenai/Olmo-3-7B-Think-SFT
+    revision_prefix: 6ff857587e
+    role: sft
+  olmo_think_dpo:
+    hf_id: allenai/Olmo-3-7B-Think-DPO
+    revision_prefix: 7b18bf927b
+    role: sft_dpo
+    weights: bin  # repo has .bin, not safetensors
+  olmo_think:
+    hf_id: allenai/Olmo-3-7B-Think
+    revision_prefix: d97e442d7c
+    role: sft_rl
+  # RL-Zero: several public variants, all from Olmo-3-1025-7B. Which one(s)
+  # to include is pending a decision (see docs/step1_findings.md).
+  # olmo_rl_zero_mix:  {hf_id: allenai/Olmo-3-7B-RL-Zero-Mix,  revision_prefix: 73b2b1a50d, role: rl_zero}
+  # olmo_rl_zero_math: {hf_id: allenai/Olmo-3-7B-RL-Zero-Math, revision_prefix: dee26a4074, role: rl_zero}

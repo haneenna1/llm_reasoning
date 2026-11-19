@@ -1,0 +1,66 @@
+{
+  "seed": 20261119,
+  "n_fewshot": 5,
+  "datasets": {
+    "triviaqa": {
+      "source": "mandarjoshi/trivia_qa",
+      "revision": "0f7faf33a3908546c6fd5b73a660e0f8ff173c2f",
+      "pool_size": 9960,
+      "file": {
+        "path": "data/questions/triviaqa.jsonl",
+        "n": 2000,
+        "sha256": "3649e26b9060041dc36ef780057910d49e88ee4c45d5b3fb3c454aeb60a17c50"
+      },
+      "file_fewshot": {
+        "path": "data/questions/triviaqa_fewshot.jsonl",
+        "n": 5,
+        "sha256": "d1d289d0b850e2a0a5c2d0308cc0f24034f8e3ab9ce7d85672c1af72345aacc6"
+      }
+    },
+    "popqa": {
+      "source": "akariasai/PopQA",
+      "revision": "098765c79ea10a2cb19c828324e33281b8336ec0",
+      "pool_size": 12187,
+      "s_pop_bin_edges": [
+        2.0,
+        165.0,
+        487.0,
+        1598.2000000000044,
+        8192.600000000002,
+        15101521.0
+      ],
+      "file": {
+        "path": "data/questions/popqa.jsonl",
+        "n": 2000,
+        "sha256": "685fed9eba434549325e915e48888a55a8e6f57b659921335b2aa6590692da17"
+      },
+      "file_fewshot": {
+        "path": "data/questions/popqa_fewshot.jsonl",
+        "n": 5,
+        "sha256": "1b2d3b1a01911a954d14cf941af2ab0f462dcbf33dfac62f290ac8aadde78c97"
+      },
+      "eval_per_bin": {
+        "0": 400,
+        "1": 400,
+        "2": 400,
+        "3": 400,
+        "4": 400
+      }
+    },
+    "gsm8k": {
+      "source": "openai/gsm8k",
+      "revision": "740312add88f781978c0658806c59bc2815b9866",
+      "pool_size": 1319,
+      "file": {
+        "path": "data/questions/gsm8k.jsonl",
+        "n": 500,
+        "sha256": "f47c1244437325cbdfbcdd56a545df938ea92c70a2ae5b961eedf521ed0ce186"
+      },
+      "file_fewshot": {
+        "path": "data/questions/gsm8k_fewshot.jsonl",
+        "n": 5,
+        "sha256": "0ed30ce34ca15ed05dad7b07725e356f3d217f2068e82bf90b02be3a617463b6"
+      }
+    }
+  }
+}

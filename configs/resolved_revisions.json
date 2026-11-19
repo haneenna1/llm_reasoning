@@ -1,0 +1,27 @@
+{
+  "dataset:mandarjoshi/trivia_qa": {
+    "revision": "0f7faf33a3908546c6fd5b73a660e0f8ff173c2f"
+  },
+  "dataset:akariasai/PopQA": {
+    "revision": "098765c79ea10a2cb19c828324e33281b8336ec0"
+  },
+  "dataset:openai/gsm8k": {
+    "revision": "740312add88f781978c0658806c59bc2815b9866"
+  },
+  "mimo_base": {
+    "hf_id": "XiaomiMiMo/MiMo-7B-Base",
+    "revision": "d892dcc601b8a242e7b3e7d3bb9f55abbe72c0ad"
+  },
+  "mimo_sft": {
+    "hf_id": "XiaomiMiMo/MiMo-7B-SFT",
+    "revision": "0a9f1180d99e686ce56b75fee637db62407ceb1b"
+  },
+  "mimo_rl_zero": {
+    "hf_id": "XiaomiMiMo/MiMo-7B-RL-Zero",
+    "revision": "da0bde6fbbc8d1cb9afad15fab947db628a22014"
+  },
+  "mimo_rl": {
+    "hf_id": "XiaomiMiMo/MiMo-7B-RL",
+    "revision": "7c7707596b0ef1032ef82970d7a4a484ca457c4d"
+  }
+}

@@ -1,0 +1,16 @@
+# Question sampling for the behavioural experiment (step 2).
+# Output: data/questions/<dataset>.jsonl (eval set) and <dataset>_fewshot.jsonl
+# (5 held-out examples for the direct-answer prompt, disjoint from the eval set).
+seed: 20261119
+out_dir: data/questions
+n_fewshot: 5
+
+datasets:
+  triviaqa:
+    n: 2000
+  popqa:
+    n: 2000
+    n_bins: 5              # equal-count quantile bins of s_pop (subject popularity)
+    drop_ambiguous: true   # drop question texts that occur >1 time with different answers
+  gsm8k:
+    n: 500

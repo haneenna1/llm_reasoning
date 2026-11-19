@@ -1,0 +1,14 @@
+# conda env for the reasoning-recall project. Recreate with:
+#   conda env create -f environment.yml
+# Exact versions of every installed package: logs/pip_freeze.txt
+name: reasoning-recall
+channels: [conda-forge]
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - vllm==0.34.0          # pulls torch 2.14.0+cu130, transformers 5.22.2
+      - datasets==5.2.0
+      - pandas==3.1.1
+      - pyarrow==26.0.1
+      - pyyaml==6.0.3

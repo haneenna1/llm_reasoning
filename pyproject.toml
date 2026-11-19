@@ -1,0 +1,12 @@
+[project]
+name = "reasoning-recall"
+version = "0.1.0"
+description = "How reasoning post-training affects factual recall (same-base-model study)"
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
