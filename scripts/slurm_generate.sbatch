@@ -6,6 +6,8 @@
 #SBATCH --mem=64G
 #SBATCH --time=2-00:00:00
 #SBATCH --output=logs/gen_%x_%j.log
+# Nodes with drivers < 580 (too old for cu130), found by the check below:
+#SBATCH --exclude=nlp-l40-1,bruno1
 # One model per job (1x L40, bf16). Pass all of that model's configs so the
 # engine is loaded once; extra flags go straight to run_generation.py.
 #   sbatch -J mimo_rl scripts/slurm_generate.sbatch configs/runs/mimo_rl_{direct,think}.yaml
