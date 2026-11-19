@@ -62,7 +62,7 @@ def main():
             golds, q = gold[r.qid]
             print(f"--- {r.qid} [{r.sample_id}] Q: {q[:150]}\n    gold: {golds[:4]}  "
                   f"| tokens={r.n_completion_tokens} finish={r.finish_reason} think_ok={r.think_ok}")
-            if r.reasoning:
+            if isinstance(r.reasoning, str) and r.reasoning:
                 rs = r.reasoning
                 print(f"    reasoning ({len(rs)} chars): {rs[:300]!r} ... {rs[-200:]!r}")
             print(f"    final: {r.final_answer[:300]!r}   rough_ok={r.rough_ok}")

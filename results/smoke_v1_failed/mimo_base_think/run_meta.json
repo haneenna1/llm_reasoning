@@ -1,0 +1,59 @@
+{
+  "sessions": [
+    {
+      "started": "2026-11-19T08:41:18.983229+00:00",
+      "limit": 50,
+      "host": "houdini",
+      "slurm_job_id": "1505975",
+      "gpus": [
+        "NVIDIA L40S"
+      ],
+      "torch": "2.14.0+cu130",
+      "vllm": "0.34.0",
+      "transformers": "5.22.2",
+      "python": "3.12.16",
+      "git_commit": "10cfed2b41f66244b56a39354e2fc527bed683b3",
+      "git_dirty": false
+    }
+  ],
+  "config": {
+    "datasets": [
+      "triviaqa",
+      "popqa",
+      "gsm8k"
+    ],
+    "k": 8,
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "greedy": true,
+    "max_tokens": {
+      "direct": 128,
+      "think": 4096
+    },
+    "seed": 20261119,
+    "out_dir": "results/smoke",
+    "chunk_size": 250,
+    "vllm": {
+      "dtype": "bfloat16",
+      "max_model_len": 6144,
+      "gpu_memory_utilization": 0.9,
+      "tensor_parallel_size": 1,
+      "enable_prefix_caching": true
+    },
+    "model": "mimo_base",
+    "condition": "think",
+    "model_info": {
+      "hf_id": "XiaomiMiMo/MiMo-7B-Base",
+      "revision_prefix": "d892dcc601",
+      "role": "base",
+      "trust_remote_code": true,
+      "prompt_style": "base",
+      "stop_token_ids": [
+        151643,
+        151645
+      ],
+      "revision": "d892dcc601b8a242e7b3e7d3bb9f55abbe72c0ad"
+    },
+    "config_file": "configs/runs/mimo_base_think.yaml"
+  }
+}

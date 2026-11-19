@@ -85,7 +85,9 @@ def stop_strings(style: str, condition: str) -> list[str]:
     if style == "base" and condition == "direct":
         return ["\n"]                     # one-line answer, then the next "Question:"
     if style == "base" and condition == "think":
-        return ["\nUser:", "\n\nUser"]    # don't let it continue the dialogue
+        # Don't let it continue the dialogue with new turns (smoke test: without
+        # "\nQuestion:" / "\nAssistant:" ~6% of samples ran on to the token limit).
+        return ["\nUser:", "\n\nUser", "\nQuestion:", "\nAssistant:"]
     return []
 
 
@@ -109,4 +111,8 @@ def split_reasoning(text: str, condition: str, style: str) -> tuple[str | None, 
         return text, "", False
     reasoning, _, answer = text.partition(THINK_CLOSE)
     reasoning = reasoning.split(THINK_OPEN, 1)[-1]
+    if style == "base":
+        # Base models may continue past the answer (new <think> block, next turn);
+        # the answer is the first paragraph after </think>.
+        answer = answer.split(THINK_OPEN, 1)[0].strip().split("\n\n", 1)[0]
     return reasoning.strip(), answer.strip(), True

@@ -40,8 +40,10 @@ Architecture: MiMo is `MiMoForCausalLM` (Qwen2-like, 36 layers, GQA with 8 KV he
 
 ## Update 2026-11-19: moved to cluster `newton`
 The project now runs on cluster `newton`, which replaces `lambda`. The compute notes above are superseded:
-- GPU nodes with bf16 are available: A100, A40, L40, RTX 6000 Ada, H200, RTX PRO 6000 (partitions `nlp`, `public`, …). **Models will run in bf16 (native dtype), not fp16**, so the fp16-overflow concern above no longer applies.
+- GPU nodes with bf16 are available: A100, A40, L40, RTX 6000 Ada, H200, RTX PRO 6000. **We may use only the `public` partition** (limit: 4 GPUs / 300 CPUs per user; CPU-only jobs are rejected). **Models will run in bf16 (native dtype), not fp16**, so the fp16-overflow concern above no longer applies.
 - A bf16 MiMo-7B checkpoint (~15 GB) fits on a single 40–48 GB GPU, so tensor parallelism is not needed.
 - `nlp-2080-2` (2080 Ti, no bf16) is the interactive/dev node only, not for experiment runs.
 - Env: Miniconda at `~/miniconda3`, env `reasoning-recall` (Python 3.12, vllm 0.34.0, torch 2.14.0+cu130, transformers 5.22.2). Spec: `environment.yml`; full freeze: `logs/pip_freeze.txt`. Built by `scripts/setup_env.sh`.
 - Assets in the HF cache `~/.cache/huggingface` (NFS, visible from all nodes). Full revisions are in `configs/resolved_revisions.json`. Downloaded so far: Family A (4 MiMo checkpoints, 59 GB), TriviaQA rc.nocontext validation (17,944), PopQA test (14,267), GSM8K test (1,319).
+- NVIDIA drivers differ between nodes. Our torch build (cu130) needs driver >= 580. `nlp-l40-1` (CUDA 12.2) fails; `houdini` (595.58) works. `scripts/slurm_generate.sbatch` checks the driver and exits early on old nodes.
+- FlashInfer's JIT sampler fails with the system nvcc, so jobs set `VLLM_USE_FLASHINFER_SAMPLER=0` (vLLM's PyTorch top-p sampler).
