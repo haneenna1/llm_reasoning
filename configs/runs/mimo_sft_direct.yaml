@@ -1,0 +1,3 @@
+# Generation run: mimo_sft, direct condition. Defaults: configs/generation.yaml
+model: mimo_sft
+condition: direct

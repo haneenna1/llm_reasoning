@@ -1,0 +1,3 @@
+# Generation run: mimo_rl_zero, think condition. Defaults: configs/generation.yaml
+model: mimo_rl_zero
+condition: think

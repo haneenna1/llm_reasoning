@@ -3,27 +3,38 @@
 # prefixes here are checked against them.
 #
 # role: base | sft | rl_zero | sft_rl | sft_dpo
+# prompt_style: base (raw few-shot text) | chatml (chat template; see src/reasoning_recall/prompts.py)
+# stop_token_ids: generation also stops on these (MiMo: <|endoftext|>=151643, <|im_end|>=151645;
+#   RL-Zero inherits Base's EOS, so all MiMo checkpoints stop on both).
 family_a:
   mimo_base:
     hf_id: XiaomiMiMo/MiMo-7B-Base
     revision_prefix: d892dcc601
     role: base
     trust_remote_code: true
+    prompt_style: base
+    stop_token_ids: [151643, 151645]
   mimo_sft:
     hf_id: XiaomiMiMo/MiMo-7B-SFT
     revision_prefix: 0a9f1180d9
     role: sft
     trust_remote_code: true
+    prompt_style: chatml
+    stop_token_ids: [151643, 151645]
   mimo_rl_zero:
     hf_id: XiaomiMiMo/MiMo-7B-RL-Zero
     revision_prefix: da0bde6fbb
     role: rl_zero
     trust_remote_code: true
+    prompt_style: chatml
+    stop_token_ids: [151643, 151645]
   mimo_rl:
     hf_id: XiaomiMiMo/MiMo-7B-RL
     revision_prefix: 7c7707596b
     role: sft_rl
     trust_remote_code: true
+    prompt_style: chatml
+    stop_token_ids: [151643, 151645]
 
 family_b:
   olmo_base:
