@@ -16,6 +16,13 @@ cd /home/haneenna/llm_reasoning
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda activate reasoning-recall
 echo "host=$(hostname) job=$SLURM_JOB_ID gpus=$CUDA_VISIBLE_DEVICES args=$*"
-nvidia-smi --query-gpu=name,memory.used,memory.total --format=csv
+nvidia-smi --query-gpu=name,driver_version,memory.used,memory.total --format=csv
+# torch 2.14+cu130 needs an NVIDIA driver with CUDA >= 13.0 (driver >= 580).
+# Some newton nodes have older drivers (e.g. nlp-l40-1: CUDA 12.2) -> fail fast.
+drv=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1 | cut -d. -f1)
+if [ "$drv" -lt 580 ]; then echo "FATAL: driver $drv on $(hostname) too old for cu130; add it to --exclude"; exit 3; fi
+# FlashInfer's top-p sampler JIT-compiles with the system nvcc (/usr/local/cuda),
+# which is too old for its flags. Use vLLM's PyTorch sampler instead (same top-p).
+export VLLM_USE_FLASHINFER_SAMPLER=0
 python scripts/run_generation.py "$@"
 echo "JOB DONE"
