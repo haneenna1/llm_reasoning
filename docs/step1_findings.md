@@ -40,7 +40,7 @@ Architecture: MiMo is `MiMoForCausalLM` (Qwen2-like, 36 layers, GQA with 8 KV he
 
 ## Update 2026-11-19: moved to cluster `newton`
 The project now runs on cluster `newton`, which replaces `lambda`. The compute notes above are superseded:
-- GPU nodes with bf16 are available: A100, A40, L40, RTX 6000 Ada, H200, RTX PRO 6000. **We may use only the `public` partition** (limit: 4 GPUs / 300 CPUs per user; CPU-only jobs are rejected). **Models will run in bf16 (native dtype), not fp16**, so the fp16-overflow concern above no longer applies.
+- GPU nodes with bf16 are available: A100, A40, L40, RTX 6000 Ada, H200, RTX PRO 6000. We have two accounts: `cs` → `public` partition (limit: 4 GPUs / 300 CPUs per user) and `nlp` → `nlp` partition (PriorityTier 100; preferred). CPU-only jobs are rejected. `scripts/submit_generate.sh` picks the fastest free card, nlp first, then public. **Models will run in bf16 (native dtype), not fp16**, so the fp16-overflow concern above no longer applies.
 - A bf16 MiMo-7B checkpoint (~15 GB) fits on a single 40–48 GB GPU, so tensor parallelism is not needed.
 - `nlp-2080-2` (2080 Ti, no bf16) is the interactive/dev node only, not for experiment runs.
 - Env: Miniconda at `~/miniconda3`, env `reasoning-recall` (Python 3.12, vllm 0.34.0, torch 2.14.0+cu130, transformers 5.22.2). Spec: `environment.yml`; full freeze: `logs/pip_freeze.txt`. Built by `scripts/setup_env.sh`.

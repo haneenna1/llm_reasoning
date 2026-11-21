@@ -1,18 +1,26 @@
 #!/bin/bash
 #SBATCH --job-name=gen
-#SBATCH --partition=public
-#SBATCH --gres=gpu:L40:1
+#SBATCH --account=nlp
+#SBATCH --partition=nlp
+#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=2-00:00:00
 #SBATCH --output=logs/gen_%x_%j.log
-# Nodes with drivers < 580 (too old for cu130), found by the check below:
-#SBATCH --exclude=nlp-l40-1,bruno1
-# One model per job (1x L40, bf16). Pass all of that model's configs so the
+# Excluded nodes: SINGLE SOURCE OF TRUTH (submit_generate.sh reads this line too).
+# nlp-l40-1, bruno1: drivers < 580 (too old for cu130), found by the check below.
+# nlp-2080-2: 2080ti has no bf16.
+#SBATCH --exclude=nlp-l40-1,bruno1,nlp-2080-2
+# Defaults: nlp account/partition (high priority), any bf16 GPU. Prefer submitting via
+# scripts/submit_generate.sh, which picks the fastest free card (nlp first, then public/cs).
+# One model per job (1 GPU, bf16). Pass all of that model's configs so the
 # engine is loaded once; extra flags go straight to run_generation.py.
-#   sbatch -J mimo_rl scripts/slurm_generate.sbatch configs/runs/mimo_rl_{direct,think}.yaml
-#   sbatch -J smoke_rl scripts/slurm_generate.sbatch --limit 50 --out_dir results/smoke configs/runs/mimo_rl_*.yaml
-# Limit on newton public: 4 GPUs / 300 CPUs per user -> at most 4 of these at once.
+#   scripts/submit_generate.sh -J mimo_rl configs/runs/mimo_rl_{direct,think}.yaml
+#   scripts/submit_generate.sh -J smoke_rl --limit 50 --out_dir results/smoke configs/runs/mimo_rl_*.yaml
+#   scripts/submit_generate.sh -J mimo_rl --time=12:00:00 -- configs/runs/mimo_rl_*.yaml   (extra sbatch flags before --)
+# Manual: sbatch -J mimo_rl [-A cs -p public --gres=gpu:A100:1] scripts/slurm_generate.sbatch <args>
+# (don't pass --exclude on the CLI: it replaces this list instead of extending it)
+# Policy on public (-A cs): 4 GPUs / 300 CPUs per user.
 set -euo pipefail
 cd /home/haneenna/llm_reasoning
 source "$HOME/miniconda3/etc/profile.d/conda.sh"

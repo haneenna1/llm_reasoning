@@ -31,10 +31,21 @@ GREEDY_ID = -1
 
 
 # ---------------------------------------------------------------- config
+def deep_merge(base: dict, upd: dict) -> dict:
+    """Recursively merge `upd` into a copy of `base`; nested dicts merge key by key,
+    anything else (scalars, lists) is replaced."""
+    out = dict(base)
+    for k, v in upd.items():
+        out[k] = deep_merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+    return out
+
+
 def load_run_config(path: str | Path, overrides: dict | None = None) -> dict:
+    # generation.yaml <- run YAML <- CLI overrides. Nested blocks (vllm, max_tokens)
+    # merge per key, so a run YAML can set e.g. `vllm: {tensor_parallel_size: 2}` alone.
     cfg = yaml.safe_load(open(ROOT / "configs/generation.yaml"))
-    cfg.update(yaml.safe_load(open(path)))
-    cfg.update({k: v for k, v in (overrides or {}).items() if v is not None})
+    cfg = deep_merge(cfg, yaml.safe_load(open(path)) or {})
+    cfg = deep_merge(cfg, {k: v for k, v in (overrides or {}).items() if v is not None})
     models = {k: v for fam in yaml.safe_load(open(ROOT / "configs/models.yaml")).values()
               for k, v in fam.items()}
     m = models[cfg["model"]]
@@ -192,6 +203,12 @@ def run(config_paths: list[str], limit: int | None = None, out_dir: str | None =
     for c in cfgs:
         by_model.setdefault(c["model"], []).append(c)
     for model, group in by_model.items():
+        # One engine per model: its configs must agree on the engine settings.
+        for c in group[1:]:
+            for key in ("vllm", "seed"):
+                if c[key] != group[0][key]:
+                    raise ValueError(f"{model}: '{key}' differs between {group[0]['config_file']} "
+                                     f"and {c['config_file']}; they share one engine, run them separately")
         llm, tok = load_engine(group[0])
         env = env_info()
         for cfg in group:
