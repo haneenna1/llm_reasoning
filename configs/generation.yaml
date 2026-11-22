@@ -14,7 +14,7 @@ chunk_size: 200       # questions per generate() call; output is flushed per chu
 
 vllm:
   dtype: bfloat16
-  max_model_len: 20480          # prompt (<~2k) + think_cap + answer (<=2048)
+  max_model_len: 26624          # prompt (zebra ~3.9k) + think_cap 16k + answer (<=4096) + forced-close
   gpu_memory_utilization: 0.90
   tensor_parallel_size: 1
   enable_prefix_caching: true   # stage 2 reuses the prompt + reasoning prefix

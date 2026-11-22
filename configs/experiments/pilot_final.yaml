@@ -1,0 +1,18 @@
+# Step-4b prompt pilot, variant "final": the new default templates (answer format only,
+# short-answer prompts end with an "Answer: <short answer>" line; no "with no explanation").
+# Compare against results/smoke (old wording, first 20 of the same items) and pilot_min.
+# Metrics: think-mode empty-trace rate, no-think answer length, accuracy.
+name: pilot_final
+split: discovery
+limit: 50
+out_dir: results/pilot/final
+benchmarks: [triviaqa, syco_answer, nq_swap, gsm8k, gsm_ic, math500]
+runs:
+  - models: [qwen3_1p7b, qwen3_8b]
+    conditions: [nothink, think]
+  - models: [gpt_oss_20b]
+    conditions: [effort_low, effort_high]
+generation:
+  k: 2
+  k_nothink: 4
+  think_cap: 8192

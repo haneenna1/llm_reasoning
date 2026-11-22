@@ -1,0 +1,21 @@
+# Step-4b prompt pilot, variant "min": minimal short-answer wording with no format line
+# ("Answer the following question with a short answer ..."). Short-answer benchmarks only
+# (math keeps its single \boxed{} template, run in pilot_final).
+name: pilot_min
+split: discovery
+limit: 50
+out_dir: results/pilot/min
+benchmarks: [triviaqa, syco_answer, nq_swap]
+benchmark_overrides:
+  triviaqa: {prompt: short_answer_min}
+  syco_answer: {prompt: short_answer_min}
+  nq_swap: {prompt: context_qa_min}
+runs:
+  - models: [qwen3_1p7b, qwen3_8b]
+    conditions: [nothink, think]
+  - models: [gpt_oss_20b]
+    conditions: [effort_low, effort_high]
+generation:
+  k: 2
+  k_nothink: 4
+  think_cap: 8192

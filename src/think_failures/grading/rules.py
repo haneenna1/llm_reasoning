@@ -40,12 +40,18 @@ def refused(answer: str) -> bool:
     return bool(_REFUSAL.search(head))
 
 
+_ANSWER_LINE = re.compile(r"(?:^|(?<=[\s*.]))(?:final answer|answer)\**\s*[:：]\**\s*([^\n]+)", re.I)
+
+
 def _strip_wrappers(answer: str) -> str:
     """Take the core answer: the content of \\boxed{} or **bold** if present, else the first line."""
     a = (answer or "").strip()
     b = last_boxed(a)
     if b is not None:
         return b
+    tagged = _ANSWER_LINE.findall(a)
+    if tagged:                       # "Answer: X" line requested by the prompt: take the last one
+        return tagged[-1].strip().strip("*").strip()
     m = re.search(r"\*\*(.+?)\*\*", a)
     if m and len(a) > 2 * len(m.group(1)) + 20:
         return m.group(1)
@@ -108,6 +114,10 @@ _NUM = re.compile(r"-?\d[\d,]*(?:\.\d+)?|-?\.\d+")
 
 def to_number(s: str) -> float | None:
     s = s.replace("\\$", "").replace("$", "").replace("\\%", "").replace("%", "")
+    # LaTeX / typographic thousands separators: 70{,}000, 57\,500, 57\!500, 57 500 (thin space)
+    s = s.replace("{,}", ",").replace("\\,", "").replace("\\!", "").replace("\\ ", "")
+    s = s.replace("\u2009", "").replace("\u202f", "").replace("\u00a0", "")
+    s = re.sub(r"(?<=\d) (?=\d{3}\b)", "", s)
     s = re.sub(r"\\(text|mathrm)\{[^}]*\}", "", s)
     m = re.match(r"^\s*\\?d?frac\{(-?\d+)\}\{(\d+)\}\s*$", s)
     if m:
@@ -147,19 +157,35 @@ def math_verify_grade(record: dict, answer: str) -> dict:
 
 
 # ---------------------------------------------------------------- inverse-scaling tasks
-_TAG = re.compile(r"<answer>\s*(.*?)\s*</answer>", re.S | re.I)
+def _last_tag(answer: str) -> str | None:
+    """Content between the last </answer> and the <answer> just before it, so that an
+    earlier mention of "<answer> tags" in the text is not swallowed into the answer."""
+    lo = answer.lower()
+    j = lo.rfind("</answer>")
+    if j < 0:
+        return None
+    i = lo.rfind("<answer>", 0, j)
+    return None if i < 0 else answer[i + len("<answer>"):j].strip()
 
 
 def answer_tag(record: dict, answer: str) -> dict:
-    """Content of the last <answer>...</answer>; numeric compare when both are numbers."""
-    tags = _TAG.findall(answer or "")
-    if not tags:
-        return {"correct": False, "label": "no_answer", "extracted": None}
-    ext = tags[-1]
+    """Inverse-scaling tasks ask for <answer>...</answer>. Extraction order: last tag pair,
+    else last \\boxed{}, else last "Answer:" line. `format` records which one was used,
+    so format compliance (which differs between modes) is analysed separately from
+    correctness; numeric compare when both sides are numbers."""
+    a = answer or ""
+    ext, fmt = _last_tag(a), "tag"
+    if ext is None:
+        ext, fmt = last_boxed(a), "boxed"
+    if ext is None:
+        lines = _ANSWER_LINE.findall(a)
+        ext, fmt = (lines[-1].strip().strip("*").strip(), "answer_line") if lines else (None, None)
+    if ext is None:
+        return {"correct": False, "label": "no_answer", "extracted": None, "format": None}
     gold = record["answers"][0]
     p, g = to_number(ext), to_number(gold)
     ok = (abs(p - g) <= 1e-6 * max(1.0, abs(g))) if (p is not None and g is not None) else norm(ext) == norm(gold)
-    return {"correct": ok, "label": "correct" if ok else "incorrect", "extracted": ext}
+    return {"correct": ok, "label": "correct" if ok else "incorrect", "extracted": ext, "format": fmt}
 
 
 # ---------------------------------------------------------------- IFEval

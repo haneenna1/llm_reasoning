@@ -2,15 +2,15 @@
 (rule-based grading) and a few examples next to the gold answers.
 
     python scripts/inspect_outputs.py results/smoke [--examples 2] [--benchmarks triviaqa ifeval]
-        [--qid triviaqa:tc_2] [--leak]
+        [--qid triviaqa:tc_2] [--long]
 
 Columns: n_q questions, n samples, acc (rule-graded, judge benchmarks excluded),
+empty (think conditions: trace under 8 tokens, i.e. the model skipped thinking),
 closed (reasoning ended by the model), forced (cut at the cap/budget), r_tok / a_tok
-median reasoning / answer tokens, a_trunc answer hit its cap, leak (no-think answers
-containing reasoning markers).
+median reasoning / answer tokens, a_long visible answer over 64 tokens (visible
+reasoning; for no-think this is the covariate of decision B), a_trunc answer hit its cap.
 """
 import argparse
-import re
 from pathlib import Path
 
 import pandas as pd
@@ -19,7 +19,8 @@ from think_failures.data import benchmark_config, read_questions
 from think_failures.generate import read_rows
 from think_failures.grading import grade
 
-LEAK = re.compile(r"<think>|</think>|\b(wait|hmm|let me (think|check|verify|recall)|okay, so|alternatively)\b", re.I)
+LONG = 64      # visible-answer tokens above which an answer is counted as containing visible reasoning
+EMPTY = 8     # reasoning tokens below which a think trace counts as skipped
 
 
 def load(root: Path, benches=None) -> pd.DataFrame:
@@ -40,7 +41,7 @@ def main():
     ap.add_argument("--examples", type=int, default=2)
     ap.add_argument("--benchmarks", nargs="+")
     ap.add_argument("--qid")
-    ap.add_argument("--leak", action="store_true", help="print no-think answers with reasoning markers")
+    ap.add_argument("--long", action="store_true", help="print no-think answers longer than LONG tokens")
     a = ap.parse_args()
     B = benchmark_config()["benchmarks"]
     df = load(Path(a.root), a.benchmarks)
@@ -50,20 +51,23 @@ def main():
     g = [grade(B[r.benchmark], recs[r.qid], r.answer) for r in df.itertuples()]
     df["correct"] = [x["correct"] for x in g]
     df["label"] = [x["label"] for x in g]
-    df["leak"] = [(r.reasoning is None) and bool(LEAK.search(r.answer or "")) for r in df.itertuples()]
+    df["a_long"] = df.n_answer_tokens > LONG
+    df["empty"] = [(r.n_reasoning_tokens < EMPTY) if isinstance(r.reasoning, str) else float("nan")
+                   for r in df.itertuples()]
     stats = df.groupby(["benchmark", "model", "condition"]).agg(
         n_q=("qid", "nunique"), n=("qid", "size"),
         acc=("correct", lambda s: s.dropna().astype(float).mean() if s.notna().any() else float("nan")),
+        empty=("empty", "mean"),
         closed=("reasoning_closed", lambda s: s.dropna().astype(float).mean()),
         forced=("forced_close", lambda s: s.dropna().astype(float).mean()),
         r_tok=("n_reasoning_tokens", "median"), a_tok=("n_answer_tokens", "median"),
-        a_trunc=("answer_truncated", "mean"), leak=("leak", "mean"))
+        a_long=("a_long", "mean"), a_trunc=("answer_truncated", "mean"))
     pd.set_option("display.width", 220, "display.max_rows", 500)
     print(stats.round(3).to_string(), "\n")
 
-    if a.leak:
-        for r in df[df.leak].head(20).itertuples():
-            print(f"--- LEAK {r.model}/{r.qid}#{r.sample_id}: {r.answer[:400]!r}")
+    if a.long:
+        for r in df[df.a_long & df.reasoning.isna()].head(20).itertuples():
+            print(f"--- LONG {r.model}/{r.qid}#{r.sample_id} ({r.n_answer_tokens} tok): {r.answer[:400]!r}")
     sel = df[df.qid == a.qid] if a.qid else df[df.sample_id.isin([0, -1]) & ~df.copied.fillna(False)]
     for (b, m, c), grp in sel.groupby(["benchmark", "model", "condition"]):
         print(f"=================== {b} / {m} / {c}")

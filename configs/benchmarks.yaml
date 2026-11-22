@@ -7,7 +7,9 @@
 #   loader             function in src/think_failures/benchmarks.py
 #   prompt             user-message template in src/think_failures/prompts.py
 #   grader             grader in src/think_failures/grading/ (judge_* graders need the LLM judge)
-#   answer_max_tokens  token cap for the visible answer (after </think>, or the whole no-think output)
+#   answer_max_tokens  token cap for the visible answer (after </think>, or the whole no-think output);
+#                      2048-4096 where no-think writes visible working (step-4 smoke: 512 truncated)
+#   screen             false = left out of `benchmarks: all` in experiment configs
 #   n_discovery/n_confirm  number of *groups* per split (a group = one question, or a question
 #                      together with its control variants, e.g. GSM-IC clean vs distracted;
 #                      all variants of a group always land in the same split)
@@ -18,7 +20,7 @@
 
 seed: 20261121
 out_dir: data/questions
-defaults: {n_discovery: 500, n_confirm: 1500, answer_max_tokens: 512}
+defaults: {n_discovery: 500, n_confirm: 1500, answer_max_tokens: 1024, screen: true}
 
 benchmarks:
   # ---------------------------------------------------------------- factual recall
@@ -41,6 +43,8 @@ benchmarks:
     loader: simpleqa
     prompt: short_answer
     grader: alias_match       # crude; SimpleQA's own judge rubric is the reference (judge_simpleqa)
+    screen: false             # floor effect (0-7% in smoke): not in the accuracy-flip screen;
+                              # kept for a guess-vs-abstain analysis with the SimpleQA judge
     n_discovery: 500
     n_confirm: 500
 
@@ -51,6 +55,7 @@ benchmarks:
     loader: falseqa
     prompt: raw
     grader: judge_abstention  # false-premise: should reject the premise; valid: should answer
+    answer_max_tokens: 2048
     strata: should_abstain
     n_discovery: 500
     n_confirm: 800
@@ -60,6 +65,7 @@ benchmarks:
     loader: kuq
     prompt: raw
     grader: judge_abstention
+    answer_max_tokens: 2048
     strata: should_abstain
   umwp:
     category: abstention
@@ -67,6 +73,7 @@ benchmarks:
     loader: umwp
     prompt: raw
     grader: judge_abstention  # answerable items are also checked numerically
+    answer_max_tokens: 2048
     # each group = an answerable problem + its unanswerable variant, so no strata needed
     n_discovery: 300          # x2 = 600 items
 
@@ -89,6 +96,7 @@ benchmarks:
     loader_args: {per_question: 9}
     prompt: math_boxed
     grader: numeric
+    answer_max_tokens: 2048
     n_discovery: 50           # GSM-IC has only ~100 base problems; 50 groups = 500 items per split
     n_confirm: 50
   ist_misleading_math:
@@ -98,6 +106,7 @@ benchmarks:
     loader_args: {file: synthetic-misleading-math-5-distractors.jsonl}
     prompt: raw               # prompts already ask for "<answer>" tags
     grader: answer_tag
+    answer_max_tokens: 4096
     strata: num_distractors
   ist_misleading_python:
     category: distractor
@@ -106,6 +115,7 @@ benchmarks:
     loader_args: {file: synthetic-misleading-python-code-5-distractors.jsonl}
     prompt: raw
     grader: answer_tag
+    answer_max_tokens: 4096
     strata: num_distractors
   ist_paradoxes:
     category: distractor
@@ -114,6 +124,7 @@ benchmarks:
     loader_args: {file: synthetic_misleading_math_famous_paradoxes.jsonl}
     prompt: raw
     grader: answer_tag
+    answer_max_tokens: 4096
     n_discovery: 400
     n_confirm: 412
   ist_zebra:
@@ -123,7 +134,7 @@ benchmarks:
     loader_args: {file: bbeh_zebra_puzzles.jsonl}
     prompt: raw
     grader: answer_tag
-    answer_max_tokens: 1024
+    answer_max_tokens: 4096
     n_discovery: 100
     n_confirm: 100
 
@@ -153,8 +164,8 @@ benchmarks:
     loader: xstest
     prompt: raw
     grader: judge_refusal
+    answer_max_tokens: 2048
     strata: should_refuse
-    answer_max_tokens: 1024
     n_discovery: 225
     n_confirm: 225
   strongreject:
@@ -163,7 +174,7 @@ benchmarks:
     loader: strongreject
     prompt: raw
     grader: judge_strongreject
-    answer_max_tokens: 1024
+    answer_max_tokens: 2048
     n_discovery: 156
     n_confirm: 157
 
@@ -174,12 +185,13 @@ benchmarks:
     loader: gsm8k
     prompt: math_boxed
     grader: numeric
+    answer_max_tokens: 2048
   math500:
     category: control
     source: {type: hf, repo: HuggingFaceH4/MATH-500}
     loader: math500
     prompt: math_boxed
     grader: math_verify
-    answer_max_tokens: 1024
+    answer_max_tokens: 8192   # no-think writes long visible working; 4096 cut ~5% (pilot)
     n_discovery: 250
     n_confirm: 250

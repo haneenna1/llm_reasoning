@@ -110,3 +110,29 @@ Problems found:
 5. The judge-graded benchmarks (abstention, safety) still need the judge models. AbstentionBench's validated judge (Llama-3.1-8B-Instruct) and the StrongREJECT fine-tuned judge (LoRA on gemma-2b) both sit behind gated HF licences, and no HF token is configured on newton.
 
 Anecdotal signals (n=20, not tested): Qwen3-1.7B ist_misleading_math no-think 0.28 → think 0.00; Qwen3-8B triviaqa 0.47 → 0.35; Qwen3-8B ist_misleading_math budget 256: 0.875 vs natural 0.775.
+
+Correction (2026-11-22): ist_zebra's 0% is not a floor effect. Every Zebra output was `no_answer`: no-think hit the 1024 answer cap (87–92%) and think traces were cut at the 4096 smoke cap (35–40 of 40). It is a cap problem (3), not (4). Zebra stays in the screen at full caps; drop it only if it is still near 0% with a 16k trace.
+
+### Decisions after step 4 (approved 2026-11-22)
+- A. Prompts state only the answer format; "with no explanation" removed. Prior work turns thinking on/off with the template switch (`enable_thinking`), keeps the answer-format instruction identical across modes, and reports that Qwen3 no-think still writes visible reasoning (Demystifying Hybrid Thinking, arXiv 2510.12680).
+- B. No-think = native mode; visible reasoning is measured (`a_long`, answer tokens) as a covariate.
+- C. SimpleQA: `screen: false` (kept for a guess-vs-abstain analysis with its judge). Zebra kept.
+- D. Answer caps: default 1024; abstention, safety, IFEval, GSM 2048; ist_* and Zebra 4096; MATH-500 8192. `max_model_len` 26624.
+- E. Each benchmark's own validated judge (needs HF login + Llama-3.1 and Gemma licences).
+
+## 6. Prompt pilot (step 4b, 2026-11-22)
+
+`configs/experiments/pilot_{final,min}.yaml`: Qwen3-1.7B, Qwen3-8B (nothink, think), gpt-oss-20b (effort_low, effort_high), 50 discovery items each of triviaqa, syco_answer, nq_swap, gsm8k, gsm_ic, math500; K=2 / 4, trace cap 8192. Variants: **final** = new default templates (short-answer prompts end with `Answer: <short answer>`); **min** = "Answer … with a short answer", no format line (short-answer benchmarks only). Baseline = smoke run (old wording, first 20 of the same items).
+
+- **Think skipping is gone.** Qwen3 think-mode empty-trace rate is 0.00 in both variants on every benchmark, from 0.65 (8B gsm8k), 0.60 (8B gsm_ic), 0.175 (8B math500), 0.90 (1.7B nq_swap), 0.30 (1.7B syco). gpt-oss effort_low still has 5–26% near-empty analysis channels; that is the model's own low-effort behaviour, not the prompt.
+- **min is hard to grade.** Without a format line, models answer in full sentences ("The people who meet at the gates of heaven are the deceased."), and the first-line extraction fails. That is why min scores lower on nq_swap (Qwen3-1.7B think 0.33 vs 0.52 for final).
+- **final parses reliably.** Every model ends with `Answer: X`. The cost is a one-sentence preamble in Qwen3 no-think short-QA answers (median 13–40 tokens vs 4–5). That is a restatement, not chain of thought.
+- **Math no-think now writes full visible working** (Qwen3-8B gsm8k median 263 tokens vs 116). This is expected under decision B (native no-think). 4–6.5% of Qwen3 no-think MATH-500 answers hit the 4096 cap while still working (not loops), so the cap was raised to 8192.
+- Only 23 / 5400 answers were truncated under final (all no-think: math500 21, triviaqa 1, nq_swap 1).
+
+**Chosen: final** (the current default templates). The `*_min` templates stay in prompts.py only for reproducing the pilot.
+
+### Grader fixes found while auditing the pilot (2026-11-22)
+- **Numeric:** LaTeX thousands separators (`70{,}000`, `57\,500`, thin spaces) were parsed as their last group ("000"). Fixed in `to_number`. gpt-oss GSM8K accuracy goes from 0.93 to 0.97 (effort_low).
+- **answer_tag (inverse-scaling tasks):** (a) Answers with `\boxed{}` instead of the requested `<answer>` tags were graded `no_answer`. Qwen3 think mode does this often. (b) A mention of "<answer> tags" earlier in the text was swallowed into the extracted answer. Now: last tag pair, else last `\boxed{}`, else last `Answer:` line; the `format` field records which was used, so format compliance is analysed separately.
+- **Effect:** the smoke "signal" Qwen3-1.7B ist_misleading_math no-think 0.28 → think 0.00 was entirely this artefact. Regraded, it is no-think 0.49 vs think 0.90. ist_zebra is 0.07–0.30 (not 0) even at the 4k smoke cap. ist_misleading_python stays low (0.05–0.60) with well-formed tags: the distractor genuinely works.

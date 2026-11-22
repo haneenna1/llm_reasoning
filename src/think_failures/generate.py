@@ -54,7 +54,7 @@ def load_experiment(path: str | Path, overrides: dict | None = None) -> dict:
     exp["config_file"] = str(Path(path).resolve().relative_to(ROOT))
     bench = benchmark_config()["benchmarks"]
     if exp.get("benchmarks", "all") == "all":
-        exp["benchmarks"] = list(bench)
+        exp["benchmarks"] = [b for b, c in bench.items() if c.get("screen", True)]
     unknown = set(exp["benchmarks"]) - set(bench)
     assert not unknown, f"unknown benchmarks {unknown}"
     return exp
@@ -175,7 +175,9 @@ def run_cell(cell: Cell, llm, tok, ctrl, limit: int | None = None) -> None:
     from vllm import SamplingParams
 
     gen, cond, m = cell.gen, cell.cond, cell.m
-    bcfg = benchmark_config()["benchmarks"][cell.benchmark]
+    bcfg = dict(benchmark_config()["benchmarks"][cell.benchmark])
+    # experiment-level overrides of benchmark settings, e.g. {"prompt": ..., "answer_max_tokens": ...}
+    bcfg.update(cell.exp.get("benchmark_overrides", {}).get(cell.benchmark, {}))
     qs = read_questions(cell.benchmark, cell.split)
     if limit:
         qs = qs.head(limit)
