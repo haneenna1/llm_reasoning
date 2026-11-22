@@ -1,0 +1,11 @@
+# Phase 1a discovery screen (project.md step 5).
+# Budgets are derived from the natural `think` traces (no extra sampling).
+name: discovery
+split: discovery
+out_dir: results/raw
+benchmarks: all
+runs:
+  - models: [qwen3_4b, qwen3_8b]
+    conditions: [nothink, think, think_b256, think_b1024, think_b4096]
+  - models: [gpt_oss_20b]
+    conditions: [effort_low, effort_high]

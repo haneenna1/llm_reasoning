@@ -1,0 +1,18 @@
+# Step-4 smoke test: every benchmark, first 20 discovery questions, small K and cap.
+# Checks: models load on newton GPUs, think control works (no leakage in nothink,
+# closed/forced traces), answers parse, graders run. Not used for any analysis.
+name: smoke
+split: discovery
+limit: 20
+out_dir: results/smoke
+benchmarks: all
+runs:
+  - models: [qwen3_1p7b, qwen3_8b]
+    conditions: [nothink, think, think_b256, think_b1024]
+  - models: [gpt_oss_20b]
+    conditions: [effort_low, effort_high, effort_high_b256]
+generation:
+  k: 2
+  k_nothink: 4
+  think_cap: 4096
+  chunk_size: 400

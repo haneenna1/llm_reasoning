@@ -6,6 +6,7 @@ __pycache__/
 
 # Large / regenerable outputs (raw generations live on /home only; back up separately)
 results/raw/
+data/raw/
 *.parquet
 
 # Logs: keep the env freeze, ignore job/run logs

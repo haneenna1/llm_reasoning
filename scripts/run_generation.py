@@ -1,26 +1,31 @@
-"""Generate completions for one or more run configs (resumable).
+"""Generate completions for one model of an experiment (resumable).
 
-    python scripts/run_generation.py configs/runs/mimo_rl_direct.yaml configs/runs/mimo_rl_think.yaml
-    python scripts/run_generation.py --limit 50 --out_dir results/smoke configs/runs/mimo_base_*.yaml
+    python scripts/run_generation.py configs/experiments/smoke.yaml --model qwen3_1p7b
+    python scripts/run_generation.py configs/experiments/discovery.yaml --model qwen3_8b \
+        [--benchmarks triviaqa popqa] [--conditions nothink think] [--limit 50] [--out_dir results/tmp]
 
-Configs for the same model share one loaded vLLM engine.
+All conditions x benchmarks of the model run with one loaded vLLM engine.
 """
 import argparse
 import os
 
 os.environ.setdefault("HF_HUB_OFFLINE", "1")  # everything is pre-downloaded and pinned
 
-from reasoning_recall.generate import run  # noqa: E402
+from think_failures.generate import run  # noqa: E402
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("configs", nargs="+")
-    ap.add_argument("--limit", type=int, help="first N questions per dataset (smoke tests)")
-    ap.add_argument("--out_dir", help="override out_dir (e.g. results/smoke)")
-    ap.add_argument("--datasets", nargs="+")
+    ap.add_argument("experiment")
+    ap.add_argument("--model", required=True)
+    ap.add_argument("--benchmarks", nargs="+")
+    ap.add_argument("--conditions", nargs="+")
+    ap.add_argument("--split", choices=["discovery", "confirm"])
+    ap.add_argument("--limit", type=int, help="first N questions per benchmark")
+    ap.add_argument("--out_dir")
     a = ap.parse_args()
-    run(a.configs, limit=a.limit, out_dir=a.out_dir, datasets=a.datasets)
+    run(a.experiment, a.model, limit=a.limit, out_dir=a.out_dir, benchmarks=a.benchmarks,
+        split=a.split, conditions=a.conditions)
 
 
 if __name__ == "__main__":

@@ -1,20 +1,20 @@
-# Defaults shared by every generation run (configs/runs/*.yaml override these).
-datasets: [triviaqa, popqa, gsm8k]
-k: 8                  # sampled completions per question
+# Defaults for every generation run (an experiment's `generation:` block overrides these).
+k: 8                  # samples per question, think conditions
+k_nothink: 16         # no-think is cheap: 16 samples = two K=8 halves for the flip noise floor
+greedy_conditions: [nothink]   # plus one greedy (T=0) sample; thinking + greedy tends to loop
+# Identical sampling in every mode (project.md decision C): Qwen3 thinking defaults.
 temperature: 0.6
 top_p: 0.95
-greedy: true          # plus one greedy (temperature 0) completion per question
-max_tokens:
-  direct: 128         # direct answers are short; hitting this is logged as truncation
-  think: 4096
-seed: 20261119        # per-request seeds are derived from (seed, qid), so results
-                      # don't depend on batching or on resuming
+top_k: 20
+think_cap: 16384      # natural thinking is cut (and force-closed) here
+seed: 20261121        # per-request seeds derive from (seed, condition, qid[, sample]),
+                      # so results don't depend on batching or on resuming
 out_dir: results/raw
-chunk_size: 250       # questions per generate() call; output is flushed per chunk
+chunk_size: 200       # questions per generate() call; output is flushed per chunk
 
 vllm:
   dtype: bfloat16
-  max_model_len: 6144 # longest prompt (~600 tokens) + 4096 thinking tokens, with margin
+  max_model_len: 20480          # prompt (<~2k) + think_cap + answer (<=2048)
   gpu_memory_utilization: 0.90
   tensor_parallel_size: 1
-  enable_prefix_caching: true   # the few-shot block is a shared prefix
+  enable_prefix_caching: true   # stage 2 reuses the prompt + reasoning prefix

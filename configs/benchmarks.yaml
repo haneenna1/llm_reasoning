@@ -1,0 +1,185 @@
+# Benchmark registry (project.md "Benchmarks").
+# Each benchmark has a disjoint discovery and confirmation split, sampled once with a
+# fixed seed by scripts/build_questions.py into data/questions/<benchmark>/{discovery,confirm}.jsonl.
+#
+#   category           failure-mode category (used for grouping in the analysis)
+#   source             where the raw data comes from (pinned by scripts/download_assets.py)
+#   loader             function in src/think_failures/benchmarks.py
+#   prompt             user-message template in src/think_failures/prompts.py
+#   grader             grader in src/think_failures/grading/ (judge_* graders need the LLM judge)
+#   answer_max_tokens  token cap for the visible answer (after </think>, or the whole no-think output)
+#   n_discovery/n_confirm  number of *groups* per split (a group = one question, or a question
+#                      together with its control variants, e.g. GSM-IC clean vs distracted;
+#                      all variants of a group always land in the same split)
+#   strata             optional meta field to stratify by (equal-count per stratum)
+#
+# Deferred (sources are GitHub-only or need multi-turn generation): ComplexBench,
+# "Mind Your Step" tasks, sycophancy "are you sure?", inverse-scaling regression.
+
+seed: 20261121
+out_dir: data/questions
+defaults: {n_discovery: 500, n_confirm: 1500, answer_max_tokens: 512}
+
+benchmarks:
+  # ---------------------------------------------------------------- factual recall
+  triviaqa:
+    category: factual
+    source: {type: hf, repo: mandarjoshi/trivia_qa, allow_patterns: ["rc.nocontext/validation-*", "README.md"]}
+    loader: triviaqa
+    prompt: short_answer
+    grader: alias_match
+  popqa:
+    category: factual
+    source: {type: hf, repo: akariasai/PopQA}
+    loader: popqa
+    prompt: short_answer
+    grader: alias_match
+    strata: pop_bin           # 5 equal-count bins of subject popularity (s_pop)
+  simpleqa:
+    category: factual
+    source: {type: hf, repo: google/simpleqa-verified}
+    loader: simpleqa
+    prompt: short_answer
+    grader: alias_match       # crude; SimpleQA's own judge rubric is the reference (judge_simpleqa)
+    n_discovery: 500
+    n_confirm: 500
+
+  # ---------------------------------------------------------------- abstention / false premise
+  falseqa:
+    category: abstention
+    source: {type: github, repo: thunlp/FalseQA, path: dataset/test.csv}
+    loader: falseqa
+    prompt: raw
+    grader: judge_abstention  # false-premise: should reject the premise; valid: should answer
+    strata: should_abstain
+    n_discovery: 500
+    n_confirm: 800
+  kuq:
+    category: abstention
+    source: {type: hf, repo: amayuelas/KUQ}
+    loader: kuq
+    prompt: raw
+    grader: judge_abstention
+    strata: should_abstain
+  umwp:
+    category: abstention
+    source: {type: github, repo: Yuki-Asuuna/UMWP, path: data/StandardDataset.jsonl}
+    loader: umwp
+    prompt: raw
+    grader: judge_abstention  # answerable items are also checked numerically
+    # each group = an answerable problem + its unanswerable variant, so no strata needed
+    n_discovery: 300          # x2 = 600 items
+
+  # ---------------------------------------------------------------- instruction following
+  ifeval:
+    category: instruction_following
+    source: {type: hf, repo: google/IFEval}
+    loader: ifeval
+    prompt: raw
+    grader: ifeval
+    answer_max_tokens: 2048
+    n_discovery: 270
+    n_confirm: 271
+
+  # ---------------------------------------------------------------- distractors / spurious features
+  gsm_ic:
+    category: distractor
+    source: {type: hf, repo: voidful/GSM-IC}
+    loader: gsm_ic            # each group = clean GSM8K question + 9 distracted variants
+    loader_args: {per_question: 9}
+    prompt: math_boxed
+    grader: numeric
+    n_discovery: 50           # GSM-IC has only ~100 base problems; 50 groups = 500 items per split
+    n_confirm: 50
+  ist_misleading_math:
+    category: distractor
+    source: {type: hf, repo: inverse-scaling-ttc/inverse-scaling-ttc-main}
+    loader: inverse_scaling_ttc
+    loader_args: {file: synthetic-misleading-math-5-distractors.jsonl}
+    prompt: raw               # prompts already ask for "<answer>" tags
+    grader: answer_tag
+    strata: num_distractors
+  ist_misleading_python:
+    category: distractor
+    source: {type: hf, repo: inverse-scaling-ttc/inverse-scaling-ttc-main}
+    loader: inverse_scaling_ttc
+    loader_args: {file: synthetic-misleading-python-code-5-distractors.jsonl}
+    prompt: raw
+    grader: answer_tag
+    strata: num_distractors
+  ist_paradoxes:
+    category: distractor
+    source: {type: hf, repo: inverse-scaling-ttc/inverse-scaling-ttc-main}
+    loader: inverse_scaling_ttc
+    loader_args: {file: synthetic_misleading_math_famous_paradoxes.jsonl}
+    prompt: raw
+    grader: answer_tag
+    n_discovery: 400
+    n_confirm: 412
+  ist_zebra:
+    category: distractor      # constraint-tracking deduction (Gema et al. 2025)
+    source: {type: hf, repo: inverse-scaling-ttc/inverse-scaling-ttc-main}
+    loader: inverse_scaling_ttc
+    loader_args: {file: bbeh_zebra_puzzles.jsonl}
+    prompt: raw
+    grader: answer_tag
+    answer_max_tokens: 1024
+    n_discovery: 100
+    n_confirm: 100
+
+  # ---------------------------------------------------------------- sycophancy
+  syco_answer:
+    category: sycophancy
+    source: {type: hf, repo: meg-tong/sycophancy-eval}
+    loader: sycophancy_answer # TriviaQA subset; each group = 4 framings of one question
+    prompt: short_answer
+    grader: alias_match
+    n_discovery: 250          # x4 framings = 1000 items
+    n_confirm: 750
+
+  # ---------------------------------------------------------------- context faithfulness
+  nq_swap:
+    category: context_faithfulness
+    source: {type: hf, repo: pminervini/NQ-Swap}
+    loader: nq_swap           # each group = original context + entity-substituted context
+    prompt: context_qa
+    grader: context_faithful
+    n_discovery: 300          # x2 contexts = 600 items
+
+  # ---------------------------------------------------------------- over-refusal / safety
+  xstest:
+    category: safety
+    source: {type: github, repo: paul-rottger/xstest, path: xstest_prompts.csv}
+    loader: xstest
+    prompt: raw
+    grader: judge_refusal
+    strata: should_refuse
+    answer_max_tokens: 1024
+    n_discovery: 225
+    n_confirm: 225
+  strongreject:
+    category: safety
+    source: {type: github, repo: alexandrasouly/strongreject, path: strongreject_dataset/strongreject_dataset.csv}
+    loader: strongreject
+    prompt: raw
+    grader: judge_strongreject
+    answer_max_tokens: 1024
+    n_discovery: 156
+    n_confirm: 157
+
+  # ---------------------------------------------------------------- positive controls
+  gsm8k:
+    category: control
+    source: {type: hf, repo: openai/gsm8k, allow_patterns: ["main/test-*", "README.md"]}
+    loader: gsm8k
+    prompt: math_boxed
+    grader: numeric
+  math500:
+    category: control
+    source: {type: hf, repo: HuggingFaceH4/MATH-500}
+    loader: math500
+    prompt: math_boxed
+    grader: math_verify
+    answer_max_tokens: 1024
+    n_discovery: 250
+    n_confirm: 250

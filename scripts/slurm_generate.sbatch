@@ -13,11 +13,11 @@
 #SBATCH --exclude=nlp-l40-1,bruno1,nlp-2080-2
 # Defaults: nlp account/partition (high priority), any bf16 GPU. Prefer submitting via
 # scripts/submit_generate.sh, which picks the fastest free card (nlp first, then public/cs).
-# One model per job (1 GPU, bf16). Pass all of that model's configs so the
-# engine is loaded once; extra flags go straight to run_generation.py.
-#   scripts/submit_generate.sh -J mimo_rl configs/runs/mimo_rl_{direct,think}.yaml
-#   scripts/submit_generate.sh -J smoke_rl --limit 50 --out_dir results/smoke configs/runs/mimo_rl_*.yaml
-#   scripts/submit_generate.sh -J mimo_rl --time=12:00:00 -- configs/runs/mimo_rl_*.yaml   (extra sbatch flags before --)
+# One model per job (1 GPU, bf16): all of its conditions x benchmarks run with
+# one loaded engine; extra flags go straight to run_generation.py.
+#   scripts/submit_generate.sh -J q8_disc configs/experiments/discovery.yaml --model qwen3_8b
+#   scripts/submit_generate.sh -J smoke_q2 configs/experiments/smoke.yaml --model qwen3_1p7b
+#   scripts/submit_generate.sh -J q8_disc --time=12:00:00 -- configs/experiments/discovery.yaml --model qwen3_8b   (extra sbatch flags before --)
 # Manual: sbatch -J mimo_rl [-A cs -p public --gres=gpu:A100:1] scripts/slurm_generate.sbatch <args>
 # (don't pass --exclude on the CLI: it replaces this list instead of extending it)
 # Policy on public (-A cs): 4 GPUs / 300 CPUs per user.

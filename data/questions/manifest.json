@@ -1,65 +1,514 @@
 {
-  "seed": 20261119,
-  "n_fewshot": 5,
-  "datasets": {
+  "seed": 20261121,
+  "benchmarks": {
     "triviaqa": {
-      "source": "mandarjoshi/trivia_qa",
-      "revision": "0f7faf33a3908546c6fd5b73a660e0f8ff173c2f",
-      "pool_size": 9960,
-      "file": {
-        "path": "data/questions/triviaqa.jsonl",
-        "n": 2000,
-        "sha256": "3649e26b9060041dc36ef780057910d49e88ee4c45d5b3fb3c454aeb60a17c50"
+      "category": "factual",
+      "source": {
+        "type": "hf",
+        "repo": "mandarjoshi/trivia_qa",
+        "allow_patterns": [
+          "rc.nocontext/validation-*",
+          "README.md"
+        ]
       },
-      "file_fewshot": {
-        "path": "data/questions/triviaqa_fewshot.jsonl",
-        "n": 5,
-        "sha256": "d1d289d0b850e2a0a5c2d0308cc0f24034f8e3ab9ce7d85672c1af72345aacc6"
+      "revision": "0f7faf33a3908546c6fd5b73a660e0f8ff173c2f",
+      "pool_items": 9960,
+      "pool_groups": 9960,
+      "discovery": {
+        "path": "data/questions/triviaqa/discovery.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "59f7d4ce12a3599f43a9e04e5e28e889f61cf2116bb06ed8e2916e6907cc2fc5"
+      },
+      "confirm": {
+        "path": "data/questions/triviaqa/confirm.jsonl",
+        "items": 1500,
+        "groups": 1500,
+        "sha256": "23aa05e78164e971d5126751aaec41744a34e8387c20ac64c8251641d0de931b"
       }
     },
     "popqa": {
-      "source": "akariasai/PopQA",
+      "category": "factual",
+      "source": {
+        "type": "hf",
+        "repo": "akariasai/PopQA"
+      },
       "revision": "098765c79ea10a2cb19c828324e33281b8336ec0",
-      "pool_size": 12187,
-      "s_pop_bin_edges": [
-        2.0,
-        165.0,
-        487.0,
-        1598.2000000000044,
-        8192.600000000002,
-        15101521.0
-      ],
-      "file": {
-        "path": "data/questions/popqa.jsonl",
-        "n": 2000,
-        "sha256": "685fed9eba434549325e915e48888a55a8e6f57b659921335b2aa6590692da17"
+      "pool_items": 12187,
+      "pool_groups": 12187,
+      "discovery": {
+        "path": "data/questions/popqa/discovery.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "2fd1fe952673aba1d51a483b76c6a75f6e9999a9d3f293f60531072168ea75a2",
+        "per_stratum": {
+          "0": 100,
+          "1": 100,
+          "2": 100,
+          "3": 100,
+          "4": 100
+        }
       },
-      "file_fewshot": {
-        "path": "data/questions/popqa_fewshot.jsonl",
-        "n": 5,
-        "sha256": "1b2d3b1a01911a954d14cf941af2ab0f462dcbf33dfac62f290ac8aadde78c97"
+      "confirm": {
+        "path": "data/questions/popqa/confirm.jsonl",
+        "items": 1500,
+        "groups": 1500,
+        "sha256": "bb10d16f6a433725d6d338dfb6da17cf177923f88f3a6cdde3c29c75731eb8c5",
+        "per_stratum": {
+          "0": 300,
+          "1": 300,
+          "2": 300,
+          "3": 300,
+          "4": 300
+        }
+      }
+    },
+    "simpleqa": {
+      "category": "factual",
+      "source": {
+        "type": "hf",
+        "repo": "google/simpleqa-verified"
       },
-      "eval_per_bin": {
-        "0": 400,
-        "1": 400,
-        "2": 400,
-        "3": 400,
-        "4": 400
+      "revision": "0dc97e0d28d8233463e005cdc4475cc2a13ba2dc",
+      "pool_items": 1000,
+      "pool_groups": 1000,
+      "discovery": {
+        "path": "data/questions/simpleqa/discovery.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "c8c91c514ab82e7814e2bd7cd2511320a63e312dd8e580692c82f209a7a676a9"
+      },
+      "confirm": {
+        "path": "data/questions/simpleqa/confirm.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "7e3f4e578df40f267ee9d69713fbbdff448c8780cf3f4a2c96078239eaad8b6f"
+      }
+    },
+    "falseqa": {
+      "category": "abstention",
+      "source": {
+        "type": "github",
+        "repo": "thunlp/FalseQA",
+        "path": "dataset/test.csv"
+      },
+      "revision": "704bd7d21736479311045fd5cde402dd567ab484",
+      "pool_items": 1372,
+      "pool_groups": 1372,
+      "discovery": {
+        "path": "data/questions/falseqa/discovery.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "fac1fab0042ee553793843c8d3dd71fc0ecd3af30d96735cec69d5a3aa5a36e3",
+        "per_stratum": {
+          "False": 250,
+          "True": 250
+        }
+      },
+      "confirm": {
+        "path": "data/questions/falseqa/confirm.jsonl",
+        "items": 800,
+        "groups": 800,
+        "sha256": "47cfaa3d5bf876045d2dfeca63387ba3c1034aa4dae41a948cfc561aa13f8634",
+        "per_stratum": {
+          "False": 400,
+          "True": 400
+        }
+      }
+    },
+    "kuq": {
+      "category": "abstention",
+      "source": {
+        "type": "hf",
+        "repo": "amayuelas/KUQ"
+      },
+      "revision": "f99b53aa226dbb0d1b086db3ec352b0da0aa8f41",
+      "pool_items": 4953,
+      "pool_groups": 4953,
+      "discovery": {
+        "path": "data/questions/kuq/discovery.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "bdc8daf0a4c4457e20af2150e4053d8cdcf364770916034fe0359f68cab10ec3",
+        "per_stratum": {
+          "False": 250,
+          "True": 250
+        }
+      },
+      "confirm": {
+        "path": "data/questions/kuq/confirm.jsonl",
+        "items": 1500,
+        "groups": 1500,
+        "sha256": "dd23af8a4a8fd039e805a1cf8b12515e41316464bad34f4915d84c8732a52bf0",
+        "per_stratum": {
+          "False": 750,
+          "True": 750
+        }
+      }
+    },
+    "umwp": {
+      "category": "abstention",
+      "source": {
+        "type": "github",
+        "repo": "Yuki-Asuuna/UMWP",
+        "path": "data/StandardDataset.jsonl"
+      },
+      "revision": "f5eb429a4a0761fe151d55ec4ef7ff10f5434953",
+      "pool_items": 5200,
+      "pool_groups": 2600,
+      "discovery": {
+        "path": "data/questions/umwp/discovery.jsonl",
+        "items": 600,
+        "groups": 300,
+        "sha256": "592e30d4ad64be41516d048bbbb346b781c38a163aef470e1682df77a0d4c414",
+        "per_variant": {
+          "answerable": 300,
+          "unanswerable": 300
+        }
+      },
+      "confirm": {
+        "path": "data/questions/umwp/confirm.jsonl",
+        "items": 3000,
+        "groups": 1500,
+        "sha256": "a8a9ab3ce2ecca0eab72aa74b15523bcfdf9937d9f56e64a37b39f316932abb8",
+        "per_variant": {
+          "answerable": 1500,
+          "unanswerable": 1500
+        }
+      }
+    },
+    "ifeval": {
+      "category": "instruction_following",
+      "source": {
+        "type": "hf",
+        "repo": "google/IFEval"
+      },
+      "revision": "966cd89545d6b6acfd7638bc708b98261ca58e84",
+      "pool_items": 541,
+      "pool_groups": 541,
+      "discovery": {
+        "path": "data/questions/ifeval/discovery.jsonl",
+        "items": 270,
+        "groups": 270,
+        "sha256": "cd0ac3edc12417991121977f58cbcfde7c7da39743c96f5f9b129ceef7319077"
+      },
+      "confirm": {
+        "path": "data/questions/ifeval/confirm.jsonl",
+        "items": 271,
+        "groups": 271,
+        "sha256": "50dbcb109105f4791cc859b7c260626581ed7e2f8133635d991392cf2dbae963"
+      }
+    },
+    "gsm_ic": {
+      "category": "distractor",
+      "source": {
+        "type": "hf",
+        "repo": "voidful/GSM-IC"
+      },
+      "revision": "a7c848ae516f8df9712abc5425aefc553489d720",
+      "pool_items": 1000,
+      "pool_groups": 100,
+      "discovery": {
+        "path": "data/questions/gsm_ic/discovery.jsonl",
+        "items": 500,
+        "groups": 50,
+        "sha256": "5c6d72bbcd05b508c5e8e1e16ebfad3f0de644b7317ec4db2bd83fd6a8bc6230",
+        "per_variant": {
+          "clean": 50,
+          "distracted": 450
+        }
+      },
+      "confirm": {
+        "path": "data/questions/gsm_ic/confirm.jsonl",
+        "items": 500,
+        "groups": 50,
+        "sha256": "0d68f2b7ac0d5330bf625c65ababadc309310e9a93dcf7e2f61d31be275c0e98",
+        "per_variant": {
+          "clean": 50,
+          "distracted": 450
+        }
+      }
+    },
+    "ist_misleading_math": {
+      "category": "distractor",
+      "source": {
+        "type": "hf",
+        "repo": "inverse-scaling-ttc/inverse-scaling-ttc-main"
+      },
+      "revision": "00baf64dac836ffc30f140f163d11aea126b0b5c",
+      "pool_items": 2500,
+      "pool_groups": 2500,
+      "discovery": {
+        "path": "data/questions/ist_misleading_math/discovery.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "38da0ddb0c12f3efc02c41df19103a887f8a9c573e0af38d1690a7955eb6da60",
+        "per_stratum": {
+          "1": 100,
+          "2": 100,
+          "3": 100,
+          "4": 100,
+          "5": 100
+        }
+      },
+      "confirm": {
+        "path": "data/questions/ist_misleading_math/confirm.jsonl",
+        "items": 1500,
+        "groups": 1500,
+        "sha256": "6921b6664ac4571be76c506829704b81c59424200942152ea9aea70281bb5765",
+        "per_stratum": {
+          "1": 300,
+          "2": 300,
+          "3": 300,
+          "4": 300,
+          "5": 300
+        }
+      }
+    },
+    "ist_misleading_python": {
+      "category": "distractor",
+      "source": {
+        "type": "hf",
+        "repo": "inverse-scaling-ttc/inverse-scaling-ttc-main"
+      },
+      "revision": "00baf64dac836ffc30f140f163d11aea126b0b5c",
+      "pool_items": 2500,
+      "pool_groups": 2500,
+      "discovery": {
+        "path": "data/questions/ist_misleading_python/discovery.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "e6da14e24516df1420562b34918d329ad0e743b5c35a80ece26b1276bf90a95c",
+        "per_stratum": {
+          "1": 100,
+          "2": 100,
+          "3": 100,
+          "4": 100,
+          "5": 100
+        }
+      },
+      "confirm": {
+        "path": "data/questions/ist_misleading_python/confirm.jsonl",
+        "items": 1500,
+        "groups": 1500,
+        "sha256": "db3b9a79b21c9ecc367322e40fdfe9bd77613b72994d90ecd11925489420a50e",
+        "per_stratum": {
+          "1": 300,
+          "2": 300,
+          "3": 300,
+          "4": 300,
+          "5": 300
+        }
+      }
+    },
+    "ist_paradoxes": {
+      "category": "distractor",
+      "source": {
+        "type": "hf",
+        "repo": "inverse-scaling-ttc/inverse-scaling-ttc-main"
+      },
+      "revision": "00baf64dac836ffc30f140f163d11aea126b0b5c",
+      "pool_items": 812,
+      "pool_groups": 812,
+      "discovery": {
+        "path": "data/questions/ist_paradoxes/discovery.jsonl",
+        "items": 400,
+        "groups": 400,
+        "sha256": "4f05866edb9bad2091f02559753f519adeb8ce1350cc17d809003f3df0f8b9a0"
+      },
+      "confirm": {
+        "path": "data/questions/ist_paradoxes/confirm.jsonl",
+        "items": 412,
+        "groups": 412,
+        "sha256": "d812f2f8405313620dd250f7c6f6b5dc93318ed533bc8028d7b496523b15cb06"
+      }
+    },
+    "ist_zebra": {
+      "category": "distractor",
+      "source": {
+        "type": "hf",
+        "repo": "inverse-scaling-ttc/inverse-scaling-ttc-main"
+      },
+      "revision": "00baf64dac836ffc30f140f163d11aea126b0b5c",
+      "pool_items": 200,
+      "pool_groups": 200,
+      "discovery": {
+        "path": "data/questions/ist_zebra/discovery.jsonl",
+        "items": 100,
+        "groups": 100,
+        "sha256": "4ccd78eca8c3dc39f1728ccdb6cd7d268b6ab1836289fb53dbb5ceba2a801c37"
+      },
+      "confirm": {
+        "path": "data/questions/ist_zebra/confirm.jsonl",
+        "items": 100,
+        "groups": 100,
+        "sha256": "f6eafee47f5aeb12a7fd210cd8a29fc1d9d136eac7dc4b7cd38a4d5b3c798fb1"
+      }
+    },
+    "syco_answer": {
+      "category": "sycophancy",
+      "source": {
+        "type": "hf",
+        "repo": "meg-tong/sycophancy-eval"
+      },
+      "revision": "18f18160e9998e524bbf027c4475bfa7fdeb6949",
+      "pool_items": 3984,
+      "pool_groups": 996,
+      "discovery": {
+        "path": "data/questions/syco_answer/discovery.jsonl",
+        "items": 1000,
+        "groups": 250,
+        "sha256": "27518001d70886e8d4c29c9cf55c8c8524b5b64d0de05a06fe657a47c7998d3c",
+        "per_variant": {
+          "doubt_correct": 250,
+          "none": 250,
+          "suggest_correct": 250,
+          "suggest_incorrect": 250
+        }
+      },
+      "confirm": {
+        "path": "data/questions/syco_answer/confirm.jsonl",
+        "items": 2984,
+        "groups": 746,
+        "sha256": "e096ad03e6dbc8af908df2f87f83d62bcdd510f27350da6dfdb1a73e0117a2ac",
+        "per_variant": {
+          "doubt_correct": 746,
+          "none": 746,
+          "suggest_correct": 746,
+          "suggest_incorrect": 746
+        }
+      }
+    },
+    "nq_swap": {
+      "category": "context_faithfulness",
+      "source": {
+        "type": "hf",
+        "repo": "pminervini/NQ-Swap"
+      },
+      "revision": "3801dbf037c6f58b0e79246f2a8073ebe5656dad",
+      "pool_items": 9492,
+      "pool_groups": 4746,
+      "discovery": {
+        "path": "data/questions/nq_swap/discovery.jsonl",
+        "items": 600,
+        "groups": 300,
+        "sha256": "d1ebe8eae2ac5b5ddce2398b6f8abdcbffff3261fe9ac2b478cd552bbba9c003",
+        "per_variant": {
+          "original": 300,
+          "substituted": 300
+        }
+      },
+      "confirm": {
+        "path": "data/questions/nq_swap/confirm.jsonl",
+        "items": 3000,
+        "groups": 1500,
+        "sha256": "416174631be6278ff49662f0f131c25251006236e395fc26a266f1c198aa111e",
+        "per_variant": {
+          "original": 1500,
+          "substituted": 1500
+        }
+      }
+    },
+    "xstest": {
+      "category": "safety",
+      "source": {
+        "type": "github",
+        "repo": "paul-rottger/xstest",
+        "path": "xstest_prompts.csv"
+      },
+      "revision": "475f10bf0a3d6a9dfb174b6de1a38afbfdff98a5",
+      "pool_items": 450,
+      "pool_groups": 450,
+      "discovery": {
+        "path": "data/questions/xstest/discovery.jsonl",
+        "items": 225,
+        "groups": 225,
+        "sha256": "7ef1d95fc1aa7116b15b0b233c6b43155bbcf35c75880bf5cfd0f0f346f3b259",
+        "per_stratum": {
+          "False": 113,
+          "True": 112
+        }
+      },
+      "confirm": {
+        "path": "data/questions/xstest/confirm.jsonl",
+        "items": 201,
+        "groups": 201,
+        "sha256": "618935242acbadc680bdbd46b81d7d376ddfe7c029fb59ef3dfb2ed0665f3baa",
+        "per_stratum": {
+          "False": 113,
+          "True": 88
+        }
+      }
+    },
+    "strongreject": {
+      "category": "safety",
+      "source": {
+        "type": "github",
+        "repo": "alexandrasouly/strongreject",
+        "path": "strongreject_dataset/strongreject_dataset.csv"
+      },
+      "revision": "3432b2d696b428f242bd507df96d80f686571d5e",
+      "pool_items": 313,
+      "pool_groups": 313,
+      "discovery": {
+        "path": "data/questions/strongreject/discovery.jsonl",
+        "items": 156,
+        "groups": 156,
+        "sha256": "3908752fcc59a1e5e8f55c82d14a2c73442fdf851f25721a1127c2ea74e07cef"
+      },
+      "confirm": {
+        "path": "data/questions/strongreject/confirm.jsonl",
+        "items": 157,
+        "groups": 157,
+        "sha256": "21a33bb3508a79ca2b42443ef42aa573ddc1016243c1ec705a244457d6b3cc4d"
       }
     },
     "gsm8k": {
-      "source": "openai/gsm8k",
-      "revision": "740312add88f781978c0658806c59bc2815b9866",
-      "pool_size": 1319,
-      "file": {
-        "path": "data/questions/gsm8k.jsonl",
-        "n": 500,
-        "sha256": "f47c1244437325cbdfbcdd56a545df938ea92c70a2ae5b961eedf521ed0ce186"
+      "category": "control",
+      "source": {
+        "type": "hf",
+        "repo": "openai/gsm8k",
+        "allow_patterns": [
+          "main/test-*",
+          "README.md"
+        ]
       },
-      "file_fewshot": {
-        "path": "data/questions/gsm8k_fewshot.jsonl",
-        "n": 5,
-        "sha256": "0ed30ce34ca15ed05dad7b07725e356f3d217f2068e82bf90b02be3a617463b6"
+      "revision": "740312add88f781978c0658806c59bc2815b9866",
+      "pool_items": 1319,
+      "pool_groups": 1319,
+      "discovery": {
+        "path": "data/questions/gsm8k/discovery.jsonl",
+        "items": 500,
+        "groups": 500,
+        "sha256": "bc20899a128e2e08e868e03a6c88d3fc7c7736c5e0c5a20c7dbdb87f18573261"
+      },
+      "confirm": {
+        "path": "data/questions/gsm8k/confirm.jsonl",
+        "items": 819,
+        "groups": 819,
+        "sha256": "04fbb4a7b5a1f05f8f7490a31479c41603a801d3d9b26c291066a8db26170262"
+      }
+    },
+    "math500": {
+      "category": "control",
+      "source": {
+        "type": "hf",
+        "repo": "HuggingFaceH4/MATH-500"
+      },
+      "revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be",
+      "pool_items": 500,
+      "pool_groups": 500,
+      "discovery": {
+        "path": "data/questions/math500/discovery.jsonl",
+        "items": 250,
+        "groups": 250,
+        "sha256": "760248c0c894cf4259256ede6cbc88b6fb9f4b78dc5b22d4939492797e8f567c"
+      },
+      "confirm": {
+        "path": "data/questions/math500/confirm.jsonl",
+        "items": 250,
+        "groups": 250,
+        "sha256": "95f1bb9497fca6679abbc09aa765c191958372db59b75bf6933d72fae54f1d41"
       }
     }
   }

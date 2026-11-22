@@ -1,60 +1,63 @@
-# Model registry. Revisions pinned to the HF commit SHA verified on 2026-11-18
-# (step 1). Full SHAs are resolved and logged at download time; the short
-# prefixes here are checked against them.
+# Model registry. Revisions were checked on 2026-11-21 (docs/phase0_findings.md).
+# scripts/download_assets.py resolves each revision_prefix to a full commit SHA and
+# writes it to configs/resolved_revisions.json; runs load models by that SHA.
 #
-# role: base | sft | rl_zero | sft_rl | sft_dpo
-# prompt_style: base (raw few-shot text) | chatml (chat template; see src/reasoning_recall/prompts.py)
-# stop_token_ids: generation also stops on these (MiMo: <|endoftext|>=151643, <|im_end|>=151645;
-#   RL-Zero inherits Base's EOS, so all MiMo checkpoints stop on both).
-family_a:
-  mimo_base:
-    hf_id: XiaomiMiMo/MiMo-7B-Base
-    revision_prefix: d892dcc601
-    role: base
-    trust_remote_code: true
-    prompt_style: base
-    stop_token_ids: [151643, 151645]
-  mimo_sft:
-    hf_id: XiaomiMiMo/MiMo-7B-SFT
-    revision_prefix: 0a9f1180d9
-    role: sft
-    trust_remote_code: true
-    prompt_style: chatml
-    stop_token_ids: [151643, 151645]
-  mimo_rl_zero:
-    hf_id: XiaomiMiMo/MiMo-7B-RL-Zero
-    revision_prefix: da0bde6fbb
-    role: rl_zero
-    trust_remote_code: true
-    prompt_style: chatml
-    stop_token_ids: [151643, 151645]
+# think_control: how thinking is switched on/off (src/think_failures/think_control.py)
+#   tags     chat template + <think>...</think> tags (Qwen3, Qwen3.5, MiMo, OLMo)
+#   harmony  gpt-oss harmony format: reasoning in the `analysis` channel; effort levels only
+# stop_token_ids: generation stops on these, in addition to the end-of-reasoning token.
+#
+# Groups: core (main study), optional (newer-generation replication),
+# legacy (later, optional replication; templates documented in docs/step1_findings.md).
+
+core:
+  qwen3_1p7b:
+    hf_id: Qwen/Qwen3-1.7B
+    revision_prefix: 70d244cc86
+    think_control: {type: tags, preset: qwen3}
+    stop_token_ids: [151645, 151643]   # <|im_end|>, <|endoftext|>
+  qwen3_4b:
+    hf_id: Qwen/Qwen3-4B
+    revision_prefix: 1cfa9a7208
+    think_control: {type: tags, preset: qwen3}
+    stop_token_ids: [151645, 151643]
+  qwen3_8b:
+    hf_id: Qwen/Qwen3-8B
+    revision_prefix: b968826d9c
+    think_control: {type: tags, preset: qwen3}
+    stop_token_ids: [151645, 151643]
+  qwen3_14b:                           # optional size; download only if compute allows
+    hf_id: Qwen/Qwen3-14B
+    revision_prefix: 40c069824f
+    think_control: {type: tags, preset: qwen3}
+    stop_token_ids: [151645, 151643]
+  gpt_oss_20b:
+    hf_id: openai/gpt-oss-20b
+    revision_prefix: 6cee5e81ee
+    think_control: {type: harmony, date: "2026-11-21"}   # pin the template's "Current date"
+    stop_token_ids: [200002, 200012]   # <|return|>, <|call|>  (<|end|> ends the analysis channel)
+
+optional:
+  qwen3p5_2b:
+    hf_id: Qwen/Qwen3.5-2B
+    revision_prefix: 15852e8c16
+    think_control: {type: tags, preset: qwen3}  # template already opens "<think>\n" in think mode
+    stop_token_ids: [248046, 248044]   # verified (<|im_end|>, <|endoftext|>)
+  qwen3p5_9b:
+    hf_id: Qwen/Qwen3.5-9B
+    revision_prefix: c202236235
+    think_control: {type: tags, preset: qwen3}
+    stop_token_ids: [248046, 248044]
+
+legacy:
   mimo_rl:
     hf_id: XiaomiMiMo/MiMo-7B-RL
     revision_prefix: 7c7707596b
-    role: sft_rl
     trust_remote_code: true
-    prompt_style: chatml
+    think_control: {type: tags, preset: prefill, system: ""}   # README: empty system prompt
     stop_token_ids: [151643, 151645]
-
-family_b:
-  olmo_base:
-    hf_id: allenai/Olmo-3-1025-7B
-    revision_prefix: a81bae42db
-    role: base
-  olmo_think_sft:
-    hf_id: allenai/Olmo-3-7B-Think-SFT
-    revision_prefix: 6ff857587e
-    role: sft
-  olmo_think_dpo:
-    hf_id: allenai/Olmo-3-7B-Think-DPO
-    revision_prefix: 7b18bf927b
-    role: sft_dpo
-    weights: bin  # repo has .bin, not safetensors
-  olmo_think:
+  olmo3_think:
     hf_id: allenai/Olmo-3-7B-Think
     revision_prefix: d97e442d7c
-    role: sft_rl
-  # RL-Zero: several public variants, all from Olmo-3-1025-7B. Which one(s)
-  # to include is pending a decision (see docs/step1_findings.md).
-  # olmo_rl_zero_mix:  {hf_id: allenai/Olmo-3-7B-RL-Zero-Mix,  revision_prefix: 73b2b1a50d, role: rl_zero}
-  # olmo_rl_zero_math: {hf_id: allenai/Olmo-3-7B-RL-Zero-Math, revision_prefix: dee26a4074, role: rl_zero}
+    think_control: {type: tags, preset: prefill}   # template already opens "<think>"
+    stop_token_ids: [100265, 100257]

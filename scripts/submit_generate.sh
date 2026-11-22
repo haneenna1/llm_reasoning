@@ -4,9 +4,9 @@
 # within each, the fastest bf16 card first. If nothing is free, queue on nlp for any bf16 card.
 #
 #   scripts/submit_generate.sh [--dry-run] [-J NAME] [SBATCH_FLAGS... --] <run_generation.py args...>
-#   scripts/submit_generate.sh -J mimo_rl configs/runs/mimo_rl_{direct,think}.yaml
-#   scripts/submit_generate.sh -J smoke_rl --limit 50 --out_dir results/smoke configs/runs/mimo_rl_*.yaml
-#   scripts/submit_generate.sh -J mimo_rl --time=12:00:00 -- configs/runs/mimo_rl_*.yaml
+#   scripts/submit_generate.sh -J q8_disc configs/experiments/discovery.yaml --model qwen3_8b
+#   scripts/submit_generate.sh -J smoke_q2 configs/experiments/smoke.yaml --model qwen3_1p7b
+#   scripts/submit_generate.sh -J q8_disc --time=12:00:00 -- configs/experiments/discovery.yaml --model qwen3_8b
 # Extra sbatch flags go before a `--`; everything after it goes to run_generation.py.
 # Without `--`, everything after --dry-run/-J goes to run_generation.py.
 set -euo pipefail

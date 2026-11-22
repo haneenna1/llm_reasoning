@@ -1,3 +1,0 @@
-# Generation run: mimo_rl, direct condition. Defaults: configs/generation.yaml
-model: mimo_rl
-condition: direct

@@ -23,5 +23,65 @@
   "mimo_rl": {
     "hf_id": "XiaomiMiMo/MiMo-7B-RL",
     "revision": "7c7707596b0ef1032ef82970d7a4a484ca457c4d"
+  },
+  "qwen3_1p7b": {
+    "hf_id": "Qwen/Qwen3-1.7B",
+    "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "qwen3_4b": {
+    "hf_id": "Qwen/Qwen3-4B",
+    "revision": "1cfa9a7208912126459214e8b04321603b3df60c"
+  },
+  "qwen3_8b": {
+    "hf_id": "Qwen/Qwen3-8B",
+    "revision": "b968826d9c46dd6066d109eabc6255188de91218"
+  },
+  "qwen3_14b": {
+    "hf_id": "Qwen/Qwen3-14B",
+    "revision": "40c069824f4251a91eefaf281ebe4c544efd3e18"
+  },
+  "gpt_oss_20b": {
+    "hf_id": "openai/gpt-oss-20b",
+    "revision": "6cee5e81ee83917806bbde320786a8fb61efebee"
+  },
+  "dataset:google/simpleqa-verified": {
+    "revision": "0dc97e0d28d8233463e005cdc4475cc2a13ba2dc"
+  },
+  "github:thunlp/FalseQA/dataset/test.csv": {
+    "revision": "704bd7d21736479311045fd5cde402dd567ab484",
+    "local": "data/raw/github/thunlp/FalseQA/dataset/test.csv"
+  },
+  "dataset:amayuelas/KUQ": {
+    "revision": "f99b53aa226dbb0d1b086db3ec352b0da0aa8f41"
+  },
+  "github:Yuki-Asuuna/UMWP/data/StandardDataset.jsonl": {
+    "revision": "f5eb429a4a0761fe151d55ec4ef7ff10f5434953",
+    "local": "data/raw/github/Yuki-Asuuna/UMWP/data/StandardDataset.jsonl"
+  },
+  "dataset:google/IFEval": {
+    "revision": "966cd89545d6b6acfd7638bc708b98261ca58e84"
+  },
+  "dataset:voidful/GSM-IC": {
+    "revision": "a7c848ae516f8df9712abc5425aefc553489d720"
+  },
+  "dataset:inverse-scaling-ttc/inverse-scaling-ttc-main": {
+    "revision": "00baf64dac836ffc30f140f163d11aea126b0b5c"
+  },
+  "dataset:meg-tong/sycophancy-eval": {
+    "revision": "18f18160e9998e524bbf027c4475bfa7fdeb6949"
+  },
+  "dataset:pminervini/NQ-Swap": {
+    "revision": "3801dbf037c6f58b0e79246f2a8073ebe5656dad"
+  },
+  "github:paul-rottger/xstest/xstest_prompts.csv": {
+    "revision": "475f10bf0a3d6a9dfb174b6de1a38afbfdff98a5",
+    "local": "data/raw/github/paul-rottger/xstest/xstest_prompts.csv"
+  },
+  "github:alexandrasouly/strongreject/strongreject_dataset/strongreject_dataset.csv": {
+    "revision": "3432b2d696b428f242bd507df96d80f686571d5e",
+    "local": "data/raw/github/alexandrasouly/strongreject/strongreject_dataset/strongreject_dataset.csv"
+  },
+  "dataset:HuggingFaceH4/MATH-500": {
+    "revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be"
   }
 }

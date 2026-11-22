@@ -1,7 +1,7 @@
 [project]
-name = "reasoning-recall"
-version = "0.1.0"
-description = "How reasoning post-training affects factual recall (same-base-model study)"
+name = "think-failures"
+version = "0.2.0"
+description = "When thinking hurts: finding, explaining and preventing reasoning-induced failures in LLMs"
 requires-python = ">=3.12"
 
 [build-system]

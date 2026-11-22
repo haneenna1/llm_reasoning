@@ -21,7 +21,11 @@ Prior work to verify and extend (cited from memory, so check in Phase 0):
 
 **Main design choice.** The core models are **hybrid models where the same weights run with thinking on or off and at controllable effort**. Any think-vs-no-think difference then comes from the generated trace alone, not from a weight difference. This makes the mechanistic phase clean, because patching between modes compares like with like. Post-training-variant comparisons (OLMo, MiMo) serve as cross-lab replication.
 
-**Novelty claim (to confirm in Phase 0):** a cross-task, same-weights, dose–response study of thinking-induced failures, followed by a causal mechanistic explanation and (as an extension) an intervention.
+**Novelty claim (updated after the Phase 0 survey, see `docs/phase0_findings.md`).** Single-task, same-weights reports of thinking-induced failures now exist: factual QA (MARGO, arXiv 2607.05861), IFEval (arXiv 2606.09662), safety (arXiv 2509.00544). So finding *a* failure mode is not the contribution. The contribution has two parts:
+1. **A rigorous cross-task behavioural map.** Same weights, K samples per question, a noise floor for flips, FDR correction, a held-out confirmation split, and dose–response over thinking budgets. None of the prior work has these.
+2. **A mechanistic explanation of the answer flips, including inside the trace. This is the main contribution.** Where in the trace the correct answer is lost, which trace content causes it, and through which internal pathway the trace overrides the answer. Contrast failures with matched successes, and compare mechanisms across failure modes. Prior mechanistic work on these failures either patches only the prompt pass before the trace (2606.09662), is correlational (2505.11423, 2601.21183), or addresses refusal rather than answer accuracy (2509.00544). Factual, abstention, distractor and context-faithfulness flips have no mechanistic account at all.
+
+Phase 3 (intervention) builds on the mechanism, as an extension.
 
 ## Phases and scope
 1. **Behavioural discovery.** Screen many benchmarks and keep only failure modes that are statistically significant, replicate across model families, and are not artifacts of grading or truncation.
@@ -34,23 +38,25 @@ Prior work to verify and extend (cited from memory, so check in Phase 0):
 Cluster `newton` (see `docs/step1_findings.md`). bf16 GPU nodes (A100, A40, L40, RTX 6000 Ada, H200, RTX PRO 6000). Accounts `nlp` (preferred) then `cs`/`public` (≤4 GPUs, preemptible). Jobs are submitted through `scripts/submit_generate.sh`. Long jobs run detached.
 
 ## Models
-Verify every model ID, chat template and think-control method in Phase 0. Do not assume template details. If newer hybrid releases exist, consider them, but keep one fixed core set for the whole study.
+Model IDs, revisions and chat templates were checked in Phase 0 (`docs/phase0_findings.md`). The core set stays fixed for the whole study.
 
 | Role | Models | Think control |
 |---|---|---|
-| **Core: same weights, size sweep** | Qwen3 hybrid: 1.7B, 4B, 8B (14B if compute allows) | native `enable_thinking` on/off; budget forcing for effort levels |
-| **Core: native effort levels** | gpt-oss-20b | `reasoning_effort` low / medium / high (harmony format) |
-| Replication (different lab, open data) | OLMo 3 7B: Think vs Instruct (same base) | prefill `</think>` after the template's forced `<think>` |
-| Replication (existing infra) | MiMo-7B-RL (optionally MiMo-7B-SFT) | prefill an empty `<think>\n\n</think>\n\n` |
+| **Core: same weights, size sweep** | Qwen3 hybrid: 1.7B, 4B, 8B (14B if compute allows) | native `enable_thinking` on/off (no-think = template-prefilled empty `<think></think>`, which is in distribution); budget forcing for effort levels |
+| **Core: native effort levels** | gpt-oss-20b | `reasoning_effort` low / medium / high only. **No no-think condition** (gpt-oss has no native off). The template's `Current date` is pinned to 2026-11-21 |
+| Optional replication: newer generation | Qwen3.5-2B / 9B | native `enable_thinking`. Multimodal, with hybrid linear attention, so behavioural replication only |
+| Optional later replication (only if time allows after Gate 2) | OLMo-3-7B-Think (prefill `</think>`), MiMo-7B-RL (prefill an empty think block) | prefill. Out of distribution; check for reasoning leakage |
 
-For the prefill-based models, check empirically that no-think outputs contain no reasoning, and document the method per model.
+Mechanistic work (Phase 2) runs on Qwen3 (standard transformer; Qwen publishes SAEs for Qwen3-1.7B-Base and Qwen3-8B-Base).
+
+**Leakage control:** measure reasoning-marker density in every no-think output. Score degenerate repetition (12-gram repetition ratio > 0.3) separately.
 
 ## Thinking conditions (dose–response)
 - **no-think**
 - **budget-forced** thinking at 256 / 1,024 / 4,096 tokens: truncate the trace at the budget, close it with `</think>`, and let the model answer
 - **natural** thinking, capped at 16,384 tokens
 - *(optional)* **extended** thinking: suppress `</think>` once or twice and append "Wait" (s1-style)
-- gpt-oss: low / medium / high effort, in place of or in addition to the budgets
+- gpt-oss: low / medium / high effort only. Its dose–response is low → high; there is no no-think point
 
 Record trace length and truncation for every sample.
 
@@ -73,7 +79,8 @@ Phase 0 may add benchmarks found in the literature survey. Any change to the lis
 
 ## Generation
 - vLLM, bf16, resumable, with seeds derived per request from (seed, qid) as in `main`.
-- **Discovery screen:** K=8 samples per question for every think condition, and **K=16 for no-think** (cheap; split into two K=8 halves to measure the noise floor). Use each model's recommended sampling (Qwen3 thinking: temperature 0.6, top-p 0.95; no-think: the model card's settings), plus one greedy run.
+- **Discovery screen:** K=8 samples per question for every think condition, and **K=16 for no-think** (cheap; split into two K=8 halves to measure the noise floor). Plus one greedy run.
+- **Sampling is identical across modes:** temperature 0.6, top-p 0.95, top-k 20, the Qwen3 thinking defaults, so the only difference between conditions is the trace. **Sensitivity check:** on a subset, rerun no-think with Qwen's recommended no-think settings (T=0.7, top-p 0.8, top-k 20) and report whether the conclusions change.
 - Save full raw outputs, including traces, keyed by (model, mode, budget, benchmark, qid, sample_id).
 - Keep prompts, question IDs and answer extraction identical across models and conditions, except for the think-control mechanism itself.
 
@@ -120,14 +127,16 @@ Also export 50 flips per candidate to a readable file for manual labelling with 
 ## Gate 1 (behavioural go/no-go, needs approval)
 A failure mode is "research-interesting" if it:
 1. survives FDR on discovery **and** replicates on the confirmation split;
-2. appears in at least 2 model families (e.g. Qwen3 and gpt-oss, or Qwen3 and OLMo);
+2. replicates across at least 2 Qwen3 sizes, and in a second model where the contrast exists: the gpt-oss effort sweep (low vs high), or Qwen3.5;
 3. is not explained by grading, extraction or truncation;
 4. yields at least ~200 robust think-induced failures **and** ~200 matched think-induced successes on one interpretable model (4–8B), for Phase 2.
 
 Report every candidate against these criteria in `RESULTS_behavioural.md`. If nothing passes, report the strongest effects and the closest misses, and we decide together.
 
 ## Phase 2: mechanistic explanation
-On the model where the confirmed effect is strongest and smallest:
+This is the main contribution. The focus is the **trace**: what in the generated reasoning causes a correct no-think answer to become wrong. Prompt-only analyses are already published.
+
+On the Qwen3 model where the confirmed effect is strongest and smallest:
 1. **Locate the flip.** Force an answer at intermediate trace prefixes (early answering) and apply the logit lens / tuned lens to the answer tokens along the trace, to find when the correct answer's probability collapses.
 2. **Latent knowledge.** Train linear probes for answer identity and correctness at the no-think answer position vs the post-trace answer position. Does the model still represent the right answer after thinking?
 3. **Causal tests:**
@@ -136,7 +145,8 @@ On the model where the confirmed effect is strongest and smallest:
    - SAE/transcoder features if public ones exist for the model;
    - steering vectors (e.g. self-doubt / backtracking directions).
 4. **Failures vs successes.** Which of the mechanisms above separates think-induced failures from matched think-induced successes?
-5. *(Optional, ties back to `main`)*: model diffing between OLMo Think and Instruct for the same failure mode.
+5. **Across failure modes.** Is the mechanism the same (e.g. a self-doubt / "But wait" pathway that suppresses a correct early representation) for factual, abstention and IF flips, or different?
+6. *(Optional, ties back to `main`)*: model diffing between OLMo Think and Instruct for the same failure mode.
 
 Gate 2: a written mechanistic account backed by at least one causal (not only correlational) result.
 
@@ -165,9 +175,9 @@ Gate 2: a written mechanistic account backed by at least one causal (not only co
 ## Order of work and timeline (today: 2026-11-21)
 | Dates | Step |
 |---|---|
-| **Phase 0** — Nov 21 → Nov 30 | 1. Literature survey: confirm novelty, verify citations, finalise benchmarks. 2. Verify models, templates, think-control methods, vLLM support on newton; **report to me**. 3. Refactor + rename to `think_failures`; benchmark registry; graders. |
+| **Phase 0** — Nov 21 → Nov 30 | 1. Literature survey ✅. 2. Verify models, templates, think control ✅ (`docs/phase0_findings.md`; decisions approved 2026-11-21). 3. Refactor + rename to `think_failures`; benchmark registry; graders. |
 | **Phase 1a** — Dec 1 → Dec 21 | 4. Smoke test: 50 questions × all benchmarks × one small Qwen3 model; hand-check graders; **show me samples**. 5. Discovery screen: Qwen3-4B/8B + gpt-oss-20b, no-think vs natural think (+ K=16 no-think). 6. Stats + ranked candidate table. 7. Flip characterisation. |
-| **Phase 1b** — Dec 22 → Jan 10 (holiday buffer) | 8. Pre-register top 2–4 candidates; confirmation split; full budget sweep; all sizes; OLMo/MiMo replication. 9. `RESULTS_behavioural.md` → **Gate 1 (approval)**. |
+| **Phase 1b** — Dec 22 → Jan 10 (holiday buffer) | 8. Pre-register top 2–4 candidates; confirmation split; full budget sweep; all Qwen3 sizes; gpt-oss effort sweep (Qwen3.5 optional). 9. `RESULTS_behavioural.md` → **Gate 1 (approval)**. |
 | **Phase 2** — Jan 11 → Feb 14 | 10–14. Mechanistic analysis on 1–2 confirmed failure modes → **Gate 2**. |
 | **Write-up** — Feb 15 → Feb 28 | Thesis/report draft for Phases 0–2. |
 | **Phase 3** — Mar 2027 → | Intervention as the thesis extension. |
