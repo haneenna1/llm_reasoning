@@ -61,3 +61,17 @@ legacy:
     revision_prefix: d97e442d7c
     think_control: {type: tags, preset: prefill}   # template already opens "<think>"
     stop_token_ids: [100265, 100257]
+
+# Judge models for the judge-graded benchmarks (src/think_failures/grading/judges.py).
+# Each benchmark uses its own published judge; XSTest's official classifier is GPT-4,
+# so its exact prompt is run on Llama-3.1-8B-Instruct instead (documented substitution).
+judges:
+  llama31_8b_instruct:              # AbstentionBench judge (FalseQA, KUQ, UMWP) + XSTest prompt
+    hf_id: meta-llama/Llama-3.1-8B-Instruct
+    revision_prefix: 0e9e39f249
+  gemma_2b:                         # base model of the StrongREJECT fine-tuned judge
+    hf_id: google/gemma-2b
+    revision_prefix: 9cf48e52b2
+  strongreject_15k_v1:              # LoRA adapter (r=8) on gemma-2b
+    hf_id: qylu4156/strongreject-15k-v1
+    revision_prefix: 4bd893d323

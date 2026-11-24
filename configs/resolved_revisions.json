@@ -83,5 +83,41 @@
   },
   "dataset:HuggingFaceH4/MATH-500": {
     "revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be"
+  },
+  "github:facebookresearch/AbstentionBench/recipe/evaluation_judge_prompts.py": {
+    "revision": "e29184174c69bc95139b8c33dcca09aacab9442a",
+    "local": "data/raw/github/facebookresearch/AbstentionBench/recipe/evaluation_judge_prompts.py"
+  },
+  "github:facebookresearch/AbstentionBench/configs/abstention_detector/llm_judge_llama_3_1_8B_instruct.yaml": {
+    "revision": "e29184174c69bc95139b8c33dcca09aacab9442a",
+    "local": "data/raw/github/facebookresearch/AbstentionBench/configs/abstention_detector/llm_judge_llama_3_1_8B_instruct.yaml"
+  },
+  "github:facebookresearch/AbstentionBench/recipe/evaluation.py": {
+    "revision": "e29184174c69bc95139b8c33dcca09aacab9442a",
+    "local": "data/raw/github/facebookresearch/AbstentionBench/recipe/evaluation.py"
+  },
+  "github:paul-rottger/xstest/evaluation/classify_completions_gpt.py": {
+    "revision": "d7bb5bd738c1fcbc36edd83d5e7d1b71a3e2d84d",
+    "local": "data/raw/github/paul-rottger/xstest/evaluation/classify_completions_gpt.py"
+  },
+  "github:dsbowen/strong_reject/strong_reject/eval_files/judge_templates.json": {
+    "revision": "7a551d5b440ec7b75d4f6f5bb7c1719965b76b47",
+    "local": "data/raw/github/dsbowen/strong_reject/strong_reject/eval_files/judge_templates.json"
+  },
+  "github:dsbowen/strong_reject/strong_reject/evaluate.py": {
+    "revision": "7a551d5b440ec7b75d4f6f5bb7c1719965b76b47",
+    "local": "data/raw/github/dsbowen/strong_reject/strong_reject/evaluate.py"
+  },
+  "llama31_8b_instruct": {
+    "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": "0e9e39f249a16976918f6564b8830bc894c89659"
+  },
+  "gemma_2b": {
+    "hf_id": "google/gemma-2b",
+    "revision": "9cf48e52b224239de00d483ec8eb84fb8d0f3a3a"
+  },
+  "strongreject_15k_v1": {
+    "hf_id": "qylu4156/strongreject-15k-v1",
+    "revision": "4bd893d32390d2cace4f067dc2e3ef5294fd78a2"
   }
 }

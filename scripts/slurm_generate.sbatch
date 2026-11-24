@@ -34,5 +34,6 @@ if [ "$drv" -lt 580 ]; then echo "FATAL: driver $drv on $(hostname) too old for 
 # FlashInfer's top-p sampler JIT-compiles with the system nvcc (/usr/local/cuda),
 # which is too old for its flags. Use vLLM's PyTorch sampler instead (same top-p).
 export VLLM_USE_FLASHINFER_SAMPLER=0
-python scripts/run_generation.py "$@"
+# TF_SCRIPT selects another GPU script with the same setup, e.g. TF_SCRIPT=scripts/run_judges.py
+python "${TF_SCRIPT:-scripts/run_generation.py}" "$@"
 echo "JOB DONE"
