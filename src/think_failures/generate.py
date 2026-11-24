@@ -179,6 +179,10 @@ def run_cell(cell: Cell, llm, tok, ctrl, limit: int | None = None) -> None:
     # experiment-level overrides of benchmark settings, e.g. {"prompt": ..., "answer_max_tokens": ...}
     bcfg.update(cell.exp.get("benchmark_overrides", {}).get(cell.benchmark, {}))
     qs = read_questions(cell.benchmark, cell.split)
+    if bcfg.get("n_groups"):
+        # deterministic random subsample of whole groups (hash of the group id, independent of file order)
+        g = sorted(qs.group.unique(), key=lambda x: hashlib.sha256(f"subsample:{x}".encode()).hexdigest())
+        qs = qs[qs.group.isin(set(g[: bcfg["n_groups"]]))]
     if limit:
         qs = qs.head(limit)
     prompts = {r["qid"]: ctrl.render(tok, user_message(bcfg["prompt"], r), cond) for r in qs.to_dict("records")}

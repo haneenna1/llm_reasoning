@@ -1,0 +1,25 @@
+# written 2026-11-22T22:11:57Z at submission of Phase 1b confirmation jobs; base commit 8ec95c1 (+ uncommitted)
+2bc5c0f83312b8983c8f4de60bb470dd824b7fde2fc5f8a424631a43b0c4dc79  docs/preregistration_phase1b.md
+43bc763679135c5bdab6e049117dac9e3b916f6cf232db03541dc16055ae6d08  configs/experiments/confirm.yaml
+b35171cca7842d75511fe8737096135ba710364f6d006c6bdf936123dc82377d  configs/generation.yaml
+dd2cf397ff46633940bbf54ed3c6db84fa3830aa7090184de04f72f79529d598  configs/benchmarks.yaml
+884097c43a8cd69b6b31de588b394b41c80f85a4cdac011ac9590a4a2eed059f  src/think_failures/prompts.py
+367aaa1967523287ad0effd66cde123d9047bde1a4df0feb7ea94897425444aa  src/think_failures/generate.py
+287d1c979520493396d7af5e498007d2b8222e2588d0190852bfdcc383707867  src/think_failures/grading/rules.py
+affda87743f7ec7d60d38eca79419d96d2f238438b974905a28bb1a0a5f49b8c  src/think_failures/grading/judges.py
+a47f94ff05f65087fa1c29c6319fbf99a5b6e6bd36d7441115b970012c688a82  scripts/run_judges.py
+744ce69d7686eeff7c50cc7c26d18aadc8c59db6c8fa8c150708951ae68d88cf  scripts/grade_outputs.py
+21a33bb3508a79ca2b42443ef42aa573ddc1016243c1ec705a244457d6b3cc4d  data/questions/strongreject/confirm.jsonl
+618935242acbadc680bdbd46b81d7d376ddfe7c029fb59ef3dfb2ed0665f3baa  data/questions/xstest/confirm.jsonl
+a8a9ab3ce2ecca0eab72aa74b15523bcfdf9937d9f56e64a37b39f316932abb8  data/questions/umwp/confirm.jsonl
+6921b6664ac4571be76c506829704b81c59424200942152ea9aea70281bb5765  data/questions/ist_misleading_math/confirm.jsonl
+d812f2f8405313620dd250f7c6f6b5dc93318ed533bc8028d7b496523b15cb06  data/questions/ist_paradoxes/confirm.jsonl
+db3b9a79b21c9ecc367322e40fdfe9bd77613b72994d90ecd11925489420a50e  data/questions/ist_misleading_python/confirm.jsonl
+#
+# Amendment written 2026-11-24T08:27:28Z, before any confirmation outcome was read.
+# After hashing, two entries were appended to the Deviations log (lines 121-122: the gpt-oss
+# H200 resubmission and the Qwen3-8B resume). Lines 1-120 are unchanged, so the hash above for
+# docs/preregistration_phase1b.md covers lines 1-120 only. Check it with:
+#   head -n 120 docs/preregistration_phase1b.md | sha256sum   # -> 2bc5c0f83312b8983c8f4de60bb470dd824b7fde2fc5f8a424631a43b0c4dc79
+# Hash of the full file with the two deviation entries (122 lines):
+#   cbc3d1598dabcc6a6ac4184bdad2072dac3a8a672415ab85d8c79be1856c50b1  docs/preregistration_phase1b.md

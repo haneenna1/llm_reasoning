@@ -1,0 +1,17 @@
+# Phase 1b confirmation (project.md step 8). Pre-registration: docs/preregistration_phase1b.md.
+# Held-out confirm split; only the benchmarks of the pre-registered hypotheses H1-H4.
+# Primary tests use Qwen3-4B + 8B; 1.7B / 14B / gpt-oss effort sweep are secondary (generalisation).
+# Budgets are derived from the natural `think` traces (no extra sampling).
+name: confirm
+split: confirm
+out_dir: results/raw
+benchmarks: [strongreject, xstest, umwp, ist_misleading_math, ist_paradoxes, ist_misleading_python]
+benchmark_overrides:
+  # deterministic subsample of whole groups (generate.py, sha256 of the group id); sizes from the
+  # power calculation in the pre-registration (>= N80 at half the discovery effect)
+  umwp: {n_groups: 500}                    # 1000 items (500 answerable/unanswerable pairs)
+runs:
+  - models: [qwen3_1p7b, qwen3_4b, qwen3_8b, qwen3_14b]
+    conditions: [nothink, think, think_b256, think_b512, think_b1024, think_b2048, think_b4096, think_b8192]
+  - models: [gpt_oss_20b]
+    conditions: [effort_low, effort_medium, effort_high]
