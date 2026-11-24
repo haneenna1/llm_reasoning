@@ -194,11 +194,11 @@ After the fixes, labels are identical across 5 repeated gradings. The fixes were
 
 ## 10. Phase 1b confirmation results (2026-11-24)
 
-**Protocol**: pre-registered in `docs/preregistration_phase1b.md` (frozen 2026-11-22, commit `74bcb3c`). Before the run, three entries were added to its Deviations log, all before any confirmation outcome was computed:
+**Protocol**: pre-registered in `docs/preregistration_phase1b.md` (frozen 2026-11-22, commit `53d59a0`). Before the run, three entries were added to its Deviations log, all before any confirmation outcome was computed:
 
 - **P5 outcome**: on answerable items, the outcome is "did not abstain and the number is correct", as the text says. The graded `correct` column (non-abstention only) is reported as exploratory.
 - **Phase 2 gate, strict reading**: every test of a hypothesis must pass the flip criterion.
-- **Analysis script**: `scripts/confirm_stats.py` (commit `cb12f79`). The dry run on the discovery data reproduces the discovery effects. A run on the confirm table with every outcome replaced by random values exercises every code path.
+- **Analysis script**: `scripts/confirm_stats.py` (commit `1bf9a7c`). The dry run on the discovery data reproduces the discovery effects. A run on the confirm table with every outcome replaced by random values exercises every code path.
 
 **Generation**: confirm split, 6 benchmarks. Qwen3-1.7B/4B/8B/14B in nothink, think and budgets 256–8192; gpt-oss-20b at low/medium/high effort. 1.51M graded rows. Two jobs were restarted, both logged as deviations: gpt-oss moved to an H200, and the Qwen3-8B job was resumed on an H200. Missing judge outcomes are at most 1.3% of any cell.
 
