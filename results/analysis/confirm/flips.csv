@@ -1,0 +1,16 @@
+test,models,hurt,helped,noise_per_dir,p_hurt_gt_helped,flip_pass
+P1,qwen3_4b+qwen3_8b,10,0,0.5,0.0009765625,True
+P1,qwen3_4b,3,0,0.5,0.125,False
+P1,qwen3_8b,7,0,0.0,0.0078125,True
+P2,qwen3_4b+qwen3_8b,13,2,0.5,0.003692626953125,True
+P2,qwen3_4b,9,2,0.0,0.03271484375,True
+P2,qwen3_8b,4,0,0.5,0.0625,False
+P3,qwen3_4b+qwen3_8b,126,5,1.5,1.1376364091470637e-31,True
+P3,qwen3_4b,48,3,1.0,9.837464176598587e-12,True
+P3,qwen3_8b,78,2,0.5,2.6808923652843627e-21,True
+P4,qwen3_8b,34,14,3.0,0.002757600742750555,True
+P5,qwen3_4b+qwen3_8b,178,4,1.5,7.378414454381455e-48,True
+P5,qwen3_4b,92,3,1.0,3.60922165711614e-24,True
+P5,qwen3_8b,86,1,0.5,5.686866711302065e-25,True
+P6,qwen3_8b,6,0,5.5,0.015625,True
+P7,qwen3_4b,18,7,3.5,0.021642625331878662,True

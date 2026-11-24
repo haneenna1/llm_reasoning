@@ -1,0 +1,5 @@
+hyp,tests,replicated,verdict,flip_pass,phase2_all_tests
+H1,"P1,P2",2/2,confirmed,"P1:yes,P2:yes",True
+H2,P3,1/1,confirmed,P3:yes,True
+H3,P4,1/1,confirmed,P4:yes,True
+H4,"P5,P6,P7",3/3,confirmed,"P5:yes,P6:yes,P7:yes",True

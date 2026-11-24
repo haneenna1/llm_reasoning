@@ -136,3 +136,114 @@ Correction (2026-11-22): ist_zebra's 0% is not a floor effect. Every Zebra outpu
 - **Numeric:** LaTeX thousands separators (`70{,}000`, `57\,500`, thin spaces) were parsed as their last group ("000"). Fixed in `to_number`. gpt-oss GSM8K accuracy goes from 0.93 to 0.97 (effort_low).
 - **answer_tag (inverse-scaling tasks):** (a) Answers with `\boxed{}` instead of the requested `<answer>` tags were graded `no_answer`. Qwen3 think mode does this often. (b) A mention of "<answer> tags" earlier in the text was swallowed into the extracted answer. Now: last tag pair, else last `\boxed{}`, else last `Answer:` line; the `format` field records which was used, so format compliance is analysed separately.
 - **Effect:** the smoke "signal" Qwen3-1.7B ist_misleading_math no-think 0.28 → think 0.00 was entirely this artefact. Regraded, it is no-think 0.49 vs think 0.90. ist_zebra is 0.07–0.30 (not 0) even at the 4k smoke cap. ist_misleading_python stays low (0.05–0.60) with well-formed tags: the distractor genuinely works.
+
+## 7. Discovery generation (Phase 1a, 2026-11-22): first look
+
+Jobs 1511246 (Qwen3-4B, 7.7 h, 178M tokens), 1511247 (Qwen3-8B, 10.4 h, 189M), 1511248 (gpt-oss-20b, 9.0 h, 278M), one H200 each on nlp-h200-1. All cells complete: 866,514 rows, 4.1 GB in `results/raw/`. Rule-graded overview: `results/analysis/discovery_first_look.txt` (descriptive; no tests, graders not yet hand-checked, judge benchmarks not graded).
+
+- **Thinking mostly helps.** Accuracy rises with budget on most benchmarks. Sycophancy and NQ-Swap improve in every framing and variant; the memorised-answer rate on substituted NQ-Swap does not rise with thinking.
+- **Candidate 1, Qwen3-8B on misleading math:** no-think 0.862 → think 0.831. Robust flips: 14 hurt vs 2 helped (noise floor ~1.5 per direction). Worst at budget 256 (0.794). The opposite holds in Qwen3-4B (0.891 → 0.967) and in gpt-oss (low 0.840 → high 0.963), so the effect is size-specific.
+- **Candidate 2, overthinking at long budgets:** Qwen3-8B paradoxes b4096 0.688 → full 0.625; Qwen3-4B misleading python b1024 0.458 → full 0.412.
+- **Candidate 3, factual recall:** Qwen3-8B PopQA 0.228 → 0.215 (9 hurt vs 3 helped). TriviaQA and PopQA have 4–13 robustly hurt items per model even where thinking helps on net (noise ≤1.5). These are material for the hurt-vs-helped mechanism contrast.
+- **gpt-oss high vs low effort:** hurt sets on sycophancy (14) and paradoxes (12), with more helped on net.
+- **Cap confound:** traces cut at the 16k cap are rare for Qwen3 (<3.5%) except on Zebra (55–66%). gpt-oss high effort hits the cap often: Zebra 95%, misleading python 41%, PopQA 29%, paradoxes 23%, KUQ 19%, IFEval 17%. Its effort_high scores are therefore partly cap-limited.
+
+## 8. Grader audit (2026-11-22)
+
+`scripts/grader_audit.py`: per rule grader, up to 100 discovery rows (40% graded correct, 60% not correct, one per question, all models/conditions), read by hand. Sample: `results/analysis/grader_audit_sample.jsonl`.
+
+| Grader | n | Wrong before fixes | Borderline (kept as graded) | Fix |
+|---|---|---|---|---|
+| alias_match (TriviaQA, PopQA, sycophancy) | 100 | 1 (+1 abstention label) | 2 ("Rhythm" vs "music game"; "post-punk" ⊃ "punk") | abstention phrases incl. curly apostrophes; last "Answer:" on a line |
+| context_faithful (NQ-Swap) | 100 | 7 | 2 (list answers > 12 words) | number words/ordinals → digits; Unicode NFKC + all Unicode punctuation; doubled "Answer:"; abstention checked before the parametric match |
+| numeric (GSM8K, GSM-IC) | 80 | 0 | 2 (≈36.36 vs 36; −25 vs 25) | none |
+| math_verify (MATH-500) | 76 | 0 | 2 (unsimplified φ expression; scaled vector) | none |
+| answer_tag (inverse-scaling tasks) | 100 | 0 (6 unformatted answers, all wrong anyway) | – | fallback: last number of a final line that is a finished sentence |
+| ifeval | 100 (30 failures read) | 0 vs the official checker | 3 short all-caps/lowercase answers fail langdetect (official behaviour, kept) | seeded langdetect and `random` (the official code is nondeterministic for invalid kwargs, e.g. letter "#") |
+
+After the fixes, labels are identical across 5 repeated gradings. The fixes were applied to all of discovery (`results/analysis/discovery_graded.parquet`, from `scripts/grade_outputs.py`) before any statistics.
+
+## 9. Judge grading and the full discovery statistics (2026-11-22)
+
+**Protocol**: `src/think_failures/grading/judges.py`. Prompts are read verbatim from the pinned official repos.
+
+- **FalseQA, KUQ, UMWP**: AbstentionBench Llama-3.1-8B-Instruct, COCONOT-style abstention prompt, greedy decoding. Answerable FalseQA and KUQ items also get the correctness prompt; UMWP answerable items use the numeric rule.
+- **XSTest**: the official GPT-4 3-class prompt run on Llama-3.1-8B-Instruct. This is a substitution.
+  - With the official max_tokens=16, Llama's preamble left 26% of outputs unparsed, so it gets 64 tokens and the first class named is taken.
+  - Constrained choice decoding was rejected: it labelled 857 of 871 plain refusals as full_compliance.
+  - Agreement with a refusal-phrase check is about 98%.
+- **StrongREJECT**: fine-tuned gemma-2b + LoRA (qylu4156/strongreject-15k-v1). The score is the expected value of the 1–5 score rescaled to [0, 1]; the response is truncated to 512 tokens; "correct" means score < .5.
+- Only the visible answer is judged, never the trace.
+
+**Run**: job 1513239 on one PRO6000.
+
+- 198k unique Llama prompts in 61 minutes; 10k StrongREJECT pairs in 5 minutes.
+- 59 of about 46k XSTest outputs (0.1%) are unparsed: Llama refused to classify a harmful response. These are dropped as missing.
+
+**Results** (`results/analysis/stats/`, figures F1–F6 in `results/analysis/figures/`, tables in `results/analysis/tables/`). Every significant negative effect of thinking is on Qwen3, and gpt-oss high effort is never significantly worse than low effort at the benchmark level. The one exception is a subgroup: answerable KUQ, −4.4 pp.
+
+- **Safety.** StrongREJECT: think minus nothink is −8.9 pp (4B) and −10.2 pp (8B). XSTest unsafe prompts: −17.2 pp and −13.0 pp in full refusals. On safe prompts, thinking *raises* compliance by 3–4 pp, so this is a shift towards complying, not noise. The budgets plateau at 1k because these traces are short.
+- **Abstention.** UMWP unanswerable problems: −15.4 pp and −17.9 pp. The abstention rate *peaks* at budgets 256–1k (about 57–62%) and then falls with longer traces (full: 29–34%). That gives the overthinking result full − b1024 = −14.2 and −12.8 pp.
+- **Misleading math, 8B**: −3.1 pp. Overthinking on paradoxes, 8B: full − b4096 = −6.3 pp. Misleading python, 4B: full − b1024 = −4.7 pp.
+- These candidates are pre-registered for Phase 1b in `docs/preregistration_phase1b.md`, as tests P1–P7.
+
+**Analysis fixes:**
+
+- `discovery_stats.subgroups` now splits the items without a variant as `variant=other`. Before this, XSTest safe/unsafe and answerable/unanswerable FalseQA/KUQ were never split.
+- `generate.py` gains a per-benchmark `n_groups` override: a deterministic subsample of whole groups by hashing the group id.
+
+## 10. Phase 1b confirmation results (2026-11-24)
+
+**Protocol**: pre-registered in `docs/preregistration_phase1b.md` (frozen 2026-11-22, commit `74bcb3c`). Before the run, three entries were added to its Deviations log, all before any confirmation outcome was computed:
+
+- **P5 outcome**: on answerable items, the outcome is "did not abstain and the number is correct", as the text says. The graded `correct` column (non-abstention only) is reported as exploratory.
+- **Phase 2 gate, strict reading**: every test of a hypothesis must pass the flip criterion.
+- **Analysis script**: `scripts/confirm_stats.py` (commit `cb12f79`). The dry run on the discovery data reproduces the discovery effects. A run on the confirm table with every outcome replaced by random values exercises every code path.
+
+**Generation**: confirm split, 6 benchmarks. Qwen3-1.7B/4B/8B/14B in nothink, think and budgets 256–8192; gpt-oss-20b at low/medium/high effort. 1.51M graded rows. Two jobs were restarted, both logged as deviations: gpt-oss moved to an H200, and the Qwen3-8B job was resumed on an H200. Missing judge outcomes are at most 1.3% of any cell.
+
+**Results**: `results/analysis/confirm/` (`summary.md` and one CSV per analysis). Every frozen file matched its hash at run time.
+
+**All four hypotheses are confirmed and all pass the Phase 2 gate.** All 7 tests replicate at Holm p < .001. Effects are think minus the lower condition, in pp:
+
+| Test | Hyp. | Discovery | Confirmation (95% CI) | Hurt / helped flips (noise floor) |
+|---|---|---|---|---|
+| P1 StrongREJECT, harmless answers (4B+8B) | H1 | −9.6 | −8.0 (−10.9, −5.5) | 10 / 0 (0.5) |
+| P2 XSTest unsafe prompts, full refusals (4B+8B) | H1 | −15.1 | −8.7 (−14.2, −3.5) | 13 / 2 (0.5) |
+| P3 UMWP unanswerable, abstentions (4B+8B) | H2 | −16.6 | −20.8 (−23.3, −18.4) | 126 / 5 (1.5) |
+| P4 misleading math (8B) | H3 | −3.2 | −2.8 (−3.9, −1.6) | 34 / 14 (3) |
+| P5 UMWP, full trace vs budget 1024 (4B+8B) | H4 | −13.1 | −14.0 (−15.2, −12.9) | 178 / 4 (1.5) |
+| P6 paradoxes, full trace vs budget 4096 (8B) | H4 | −6.3 | −5.3 (−6.6, −4.0) | 6 / 0 (5.5) |
+| P7 misleading python, full trace vs budget 1024 (4B) | H4 | −4.7 | −4.6 (−5.5, −3.7) | 18 / 7 (3.5) |
+
+- P2 shrank by about half, as expected after selecting the largest discovery effects. It still replicates. P3 grew.
+- P6 passes the flip gate only narrowly: 6 hurt flips against a noise floor of 5.5.
+- **Sensitivity**: every test holds with the capped items removed. P1 holds on the continuous StrongREJECT score (−9.2 pp). The exploratory P5 variant gives −14.2 pp.
+
+**Secondary analyses** (BH-FDR, not confirmatory):
+
+- **Generalisation across sizes** (think − nothink, or full − budget for P5–P7; pp):
+
+  | Test | 1.7B | 4B | 8B | 14B |
+  |---|---|---|---|---|
+  | P1 | −15.1 | −5.9 | −10.2 | −7.1 |
+  | P2 | −24.5 | −8.4 | −9.0 | −2.9 (n.s.) |
+  | P3 | −13.8 | −19.1 | −22.5 | −15.7 |
+  | P4 | +20.5 | +8.6 | −2.8 | +3.0 |
+  | P5 | −12.8 | −14.2 | −13.8 | −9.8 |
+  | P6 | +1.7 | −0.7 (n.s.) | −5.2 | −0.2 (n.s.) |
+  | P7 | +5.5 | −4.6 | +4.2 | −5.0 |
+
+  - Safety (H1) and abstention (H2, P5) generalise to every Qwen3 size. The only exception is P2 at 14B.
+  - Misleading math (H3) and the overthinking effects P6 and P7 are confirmed for the pre-registered models but are **size-specific**: thinking helps the other sizes on misleading math, by up to +20.5 pp at 1.7B.
+- **Dose-response**:
+  - Abstention (P3, P5) has a negative quadratic term in every size, with the vertex at level 1.7–2.7. It peaks at budgets of about 512–1k and then falls as traces get longer.
+  - On safety (P1, P2), the loss appears within the first few hundred thinking tokens and does not grow with longer traces.
+- **gpt-oss-20b effort sweep**: medium or high effort is never significantly worse than low effort on any test. It helps on abstention (+10.2 pp at high), misleading math (+13.3), paradoxes (+10.3) and misleading python (+39.7).
+- **XSTest safe prompts**: thinking lowers over-refusal (−2.6 pp, 4B+8B) and raises full compliance (+6.1 pp). With H1, this points to a general shift towards complying, not only a loss of safety.
+
+**Implications for Phase 2**:
+
+- H1 (safety) and H2 (abstention) are the strongest candidates. They are large, they hold across all sizes, and their flip counts are far above the noise floor.
+- For H2 the dose-response gives a natural contrast: the same trace cut at about 1k tokens abstains, and the full trace does not.
+- H3 and H4 (P6, P7) are real but model-specific. They are better suited to case studies than to general mechanism claims.
