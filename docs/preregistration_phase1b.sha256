@@ -23,3 +23,9 @@ db3b9a79b21c9ecc367322e40fdfe9bd77613b72994d90ecd11925489420a50e  data/questions
 #   head -n 120 docs/preregistration_phase1b.md | sha256sum   # -> 2bc5c0f83312b8983c8f4de60bb470dd824b7fde2fc5f8a424631a43b0c4dc79
 # Hash of the full file with the two deviation entries (122 lines):
 #   cbc3d1598dabcc6a6ac4184bdad2072dac3a8a672415ab85d8c79be1856c50b1  docs/preregistration_phase1b.md
+#
+# Amendment written 2026-11-24T08:38:18Z, before any confirmation outcome was read.
+# Three entries appended to the Deviations log (P5 outcome clarification; Phase 2 gate reading;
+# analysis script). Lines 1-120 are still unchanged. Full file (125 lines) and analysis script:
+#   65ab3b6312c3c9e2872f19255876b9cf8ff338ea006e2b63315eb408c09633b5  docs/preregistration_phase1b.md
+#   affec58775266bd2f595d6accefed77e9ce37347adfbdfbcffe0bef3cfb19a65  scripts/confirm_stats.py
